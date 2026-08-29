@@ -2,10 +2,13 @@ import { ImuReportPace, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import type { Scene } from '../types'
 import { buildView } from './view'
 import { READOUTS } from './readouts'
+import { createTelemetry } from './telemetry'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
 import { registerImuSampler, type ImuSample } from './event-handlers/registerImuSampler'
-import { registerSpeedReadout } from './event-handlers/registerSpeedReadout'
+import { registerLocation } from './event-handlers/registerLocation'
+import { registerIntensity } from './event-handlers/registerIntensity'
 import { startHudDriver } from './hudDriver'
+import { startLeftDataDriver } from './leftDataDriver'
 
 /**
  * The F-16C HUD scene: renders fighter HUD symbology and keeps it up while the
@@ -24,13 +27,16 @@ export function createF16cHudScene(): Scene {
       if (created !== 0) console.error('HUD page create failed:', created)
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
+      const telemetry = createTelemetry()
       await bridge.imuControl(true, ImuReportPace.P500)
 
       cleanups = [
         registerExitOnDoubleTap(bridge),
         registerImuSampler(bridge, imu),
-        registerSpeedReadout(bridge, READOUTS.airspeed.id, READOUTS.airspeed.name),
+        registerIntensity(bridge, telemetry),
+        registerLocation(bridge, telemetry, READOUTS.airspeed.id, READOUTS.airspeed.name),
         startHudDriver(bridge, imu),
+        startLeftDataDriver(bridge, telemetry, READOUTS.leftData.id, READOUTS.leftData.name),
         () => void bridge.imuControl(false),
       ]
     },

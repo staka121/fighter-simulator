@@ -58,8 +58,9 @@ export function buildReadoutContainers(): TextContainerProperty[] {
     // Altitude box, a few px right of the panel edge (432). Same snug baseline
     // as the airspeed box, widened for 4 digits.
     container({ id: r.altitude.id, name: r.altitude.name, x: 436, y: 125, w: 68, h: 32, content: '6590', boxed: true, pad: 1 }),
-    // Left data block (below the airspeed box).
-    container({ id: r.leftData.id, name: r.leftData.name, x: 86, y: 162, w: 58, h: 100, content: 'ARM\n0.78\n3.7\nNAV\n089 089' }),
+    // Left data block (below the airspeed box): walking telemetry, filled live
+    // by the left-data driver. ARM / avg speed / intensity / movement / goal.
+    container({ id: r.leftData.id, name: r.leftData.name, x: 8, y: 162, w: 134, h: 92, content: 'AVG 0.0\nINT 0\nSTOP' }),
     // Right data block (below the altitude box).
     container({ id: r.rightData.id, name: r.rightData.name, x: 436, y: 158, w: 74, h: 100, content: 'R 4030\nAL 500\nB030.9\n003:38\n030>001' }),
     // Heading tape + bank, below the panel.
