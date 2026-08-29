@@ -109,15 +109,16 @@ export function buildReadoutContainers(): TextContainerProperty[] {
       h: 40,
       content: '     ▲\n 12   [139]   15',
     }),
-    // Missile ammo, bottom-left.
+    // Weapons status (master arm + missiles), bottom-left. Driven by the
+    // missile system: `ARM <n>` while armed, decrementing on each shot.
     container({
       id: r.ammo.id,
       name: r.ammo.name,
-      x: 10,
-      y: 262,
-      w: 90,
-      h: 22,
-      content: `MSL ${AMMO_START}`,
+      x: 8,
+      y: 256,
+      w: 96,
+      h: 32,
+      content: `ARM ${AMMO_START}`,
     }),
   ]
 }

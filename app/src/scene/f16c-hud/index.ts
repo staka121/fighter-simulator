@@ -3,7 +3,9 @@ import type { Scene } from '../types'
 import { buildView } from './view'
 import { READOUTS } from './readouts'
 import { createTelemetry } from './telemetry'
+import { createMissileSystem } from './missileSystem'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
+import { registerFireOnTap } from './event-handlers/registerFireOnTap'
 import { registerImuSampler, type ImuSample } from './event-handlers/registerImuSampler'
 import { registerLocation } from './event-handlers/registerLocation'
 import { registerIntensity } from './event-handlers/registerIntensity'
@@ -28,10 +30,12 @@ export function createF16cHudScene(): Scene {
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
       const telemetry = createTelemetry()
+      const missiles = createMissileSystem(bridge)
       await bridge.imuControl(true, ImuReportPace.P500)
 
       cleanups = [
         registerExitOnDoubleTap(bridge),
+        registerFireOnTap(bridge, () => missiles.fire()),
         registerImuSampler(bridge, imu),
         registerIntensity(bridge, telemetry),
         registerLocation(bridge, telemetry, READOUTS.airspeed.id, READOUTS.airspeed.name),
