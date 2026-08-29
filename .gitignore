@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Local dev notes — keep out of the public repo
+NOTES.md

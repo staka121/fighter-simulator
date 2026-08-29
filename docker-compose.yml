@@ -1,0 +1,14 @@
+services:
+  dev:
+    build: .
+    working_dir: /app
+    # Share the project files with the host (edits on either side are visible).
+    volumes:
+      - ./:/app
+    ports:
+      # Publish the container's Vite port (5173) to the host.
+      # The phone connects to <Mac LAN IP>:5173, which is forwarded here.
+      - "5173:5173"
+    # Keep bash alive so we can `docker compose exec` into the container.
+    tty: true
+    stdin_open: true
