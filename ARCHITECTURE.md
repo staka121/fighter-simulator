@@ -35,6 +35,7 @@ src/
         ├── index.ts     # create<Name>Scene(): the lifecycle + wiring.
         ├── view.ts      # buildView(): builds the container(s) to render.
         │                # Also owns shared constants (container id/name, text).
+        ├── render.ts    # (optional) Canvas 2D → PNG bytes for image symbology.
         └── event-handlers/
             └── register<Thing>.ts   # One event handler per file.
 ```
@@ -129,6 +130,26 @@ quirk in a handler.
 - `containerTotalNum` is **1–12**; at most **8** text containers per page.
 - Initial text content is capped around **1,000 chars**.
 - Image containers need `updateImageRawData` after creation to show content.
+
+## Graphical symbology via Canvas → PNG (verified recipe)
+
+Text containers cover alphanumeric readouts. For graphics (cross, FPM, pitch
+ladder, circles/lines), use **image containers** with this recipe — reverse-
+engineered and verified on-device:
+
+- Draw white-on-black with the **Canvas 2D API**, then export PNG bytes:
+  `canvas.toBlob('image/png')` → `arrayBuffer()` → `Uint8Array`. White = lit
+  green, black = off. See `scene/f16c-hud/render.ts` (`renderToPngBytes`).
+- Pass those bytes to `bridge.updateImageRawData({ containerID, containerName,
+  imageData })` as a **`Uint8Array` of ENCODED image bytes**. The host decodes,
+  resizes, and converts to 4-bit greyscale itself.
+  - Do **not** pass a base64 string or hand-packed raw pixels — both fail
+    (`sendFailed` / `imageException`). Encoded PNG/JPEG bytes are what works.
+- `updateImageRawData` result is `success` | `imageException` |
+  `imageSizeInvalid` | `imageToGray4Failed` | `sendFailed`. Must be **serial**
+  (one send in flight at a time); await each.
+- Image containers can't `isEventCapture`. Put a full-canvas transparent text
+  container (content `' '`, `isEventCapture: 1`) behind them to receive taps.
 
 ## Open design questions
 

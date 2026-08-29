@@ -28,8 +28,11 @@ install: ## Install project dependencies (npm install)
 	$(COMPOSE) exec dev bash -lc 'cd $(APP_DIR) && npm install'
 
 dev: ## (Re)start the Vite dev server (background) in the container
-	# Kill any stray dev server first so we always have exactly one on $(PORT).
-	$(COMPOSE) exec -d dev bash -lc 'pkill -f vite 2>/dev/null; sleep 1; cd $(APP_DIR) && npm run dev > /tmp/vite.log 2>&1'
+	# Stop any existing server first, as a SEPARATE step. Keeping the kill out of
+	# the start command's shell avoids `pkill -f` matching its own launcher
+	# (whose command line would otherwise contain the pattern and self-terminate).
+	-$(COMPOSE) exec -T dev bash -lc 'pkill -f "bin/vite" 2>/dev/null; sleep 1'
+	$(COMPOSE) exec -d dev bash -lc 'cd $(APP_DIR) && npm run dev > /tmp/vite.log 2>&1'
 	@echo "Vite starting -> http://$(IP):$(PORT)"
 
 logs: ## Tail the Vite dev server log

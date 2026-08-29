@@ -41,6 +41,16 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
   (Rationale: `CLICK_EVENT` is 0 and protobuf drops zero-value fields, so a tap
   arrives with `eventType === undefined`.)
 
+## Image / graphical symbology
+
+- Draw graphics with the **Canvas 2D API** (white-on-black), export PNG bytes
+  (`canvas.toBlob('image/png')` → `Uint8Array`), and pass that Uint8Array as
+  `imageData` to `updateImageRawData`. The host converts to 4-bit greyscale.
+- Do NOT pass base64 strings or hand-packed raw pixels — they fail
+  (`sendFailed` / `imageException`). Only ENCODED image bytes work. Sends must
+  be serial. Image containers need a transparent capture text layer behind them.
+  See ARCHITECTURE.md "Graphical symbology" and `scene/f16c-hud/render.ts`.
+
 ## Hard SDK constraints
 
 - `createStartUpPageContainer` may be called **only once**, at first render.
