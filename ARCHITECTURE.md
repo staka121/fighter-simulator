@@ -151,6 +151,20 @@ engineered and verified on-device:
 - Image containers can't `isEventCapture`. Put a full-canvas transparent text
   container (content `' '`, `isEventCapture: 1`) behind them to receive taps.
 
+## Animated symbology (throttled redraw loop)
+
+Dynamic graphics (e.g. the IMU-driven flight path marker) use an async loop that
+recomputes state each tick and re-sends the image — but **only when the pixels
+actually changed**, throttled (`~8 Hz`) because images can't be sent too often.
+The scene owns the loop and stops it in `leave` (also `imuControl(false)` and
+unsubscribe). See `scene/f16c-hud/fpmDriver.ts`.
+
+- IMU: `imuControl(true, ImuReportPace.P500)` streams `sysEvent.imuData {x,y,z}`
+  (accelerometer; head pitch→x, yaw→y, z≈vertical). A `register*` handler
+  samples the latest value into a mutable sink the loop reads.
+- Motion is smoothed with a low-pass on the input + a spring-damper, and the
+  position is hard-clamped so violent turns can't push symbology off-screen.
+
 ## Open design questions
 
 - **Scene switching.** Only one scene exists today, mounted once. Because
