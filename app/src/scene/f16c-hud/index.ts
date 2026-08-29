@@ -1,17 +1,19 @@
 import { ImuReportPace, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import type { Scene } from '../types'
 import { buildView } from './view'
+import { READOUTS } from './readouts'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
 import { registerImuSampler, type ImuSample } from './event-handlers/registerImuSampler'
+import { registerSpeedReadout } from './event-handlers/registerSpeedReadout'
 import { startHudDriver } from './hudDriver'
 
 /**
  * The F-16C HUD scene: renders fighter HUD symbology and keeps it up while the
  * wearer walks around. Double-tap to exit.
  *
- * The boresight cross is fixed; the flight path marker is driven by the IMU
- * (velocity-vector feel). Symbology is drawn with the Canvas 2D API and sent as
- * PNG bytes; the host converts to 4-bit greyscale. See render.ts / fpmDriver.ts.
+ * The boresight cross is fixed; the flight path marker and horizon/ladder are
+ * driven by the IMU. Graphics are drawn with the Canvas 2D API and sent as PNG
+ * bytes; the host converts to 4-bit greyscale. See render.ts / hudDriver.ts.
  */
 export function createF16cHudScene(): Scene {
   let cleanups: Array<() => void> = []
@@ -27,6 +29,7 @@ export function createF16cHudScene(): Scene {
       cleanups = [
         registerExitOnDoubleTap(bridge),
         registerImuSampler(bridge, imu),
+        registerSpeedReadout(bridge, READOUTS.airspeed.id, READOUTS.airspeed.name),
         startHudDriver(bridge, imu),
         () => void bridge.imuControl(false),
       ]

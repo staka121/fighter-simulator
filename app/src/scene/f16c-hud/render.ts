@@ -5,37 +5,26 @@
 // (16 shades of green on black) internally. So we just draw white-on-black with
 // the Canvas 2D API and export PNG bytes — perfect for vector HUD symbology.
 //
-// A single image is capped at 288×144 and a page allows at most 4 image
-// containers, so all central symbology is composited into ONE 288×144 layer
-// (`drawHud`) rather than one container per symbol.
+// The continuous moving symbology (horizon, ladder, FPM, cross) lives in ONE
+// centered 288×144 image. Splitting it across tiles tears at the seam: tiles
+// are sent serially (not atomically), so a line crossing the boundary shows one
+// half updated before the other. Discrete readouts (airspeed, altitude, ammo…)
+// go in separate TEXT containers instead — independent updates don't tear.
+// We draw the whole 576×288 HUD (`drawHud`) shifted so the tile shows its region.
 
-/** Draw onto a fresh black canvas and return encoded PNG bytes. */
-export async function renderToPngBytes(
-  width: number,
-  height: number,
-  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
-): Promise<Uint8Array> {
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+/** The per-eye glasses canvas. Origin top-left, X right, Y down. */
+export const CANVAS = { width: 576, height: 288 } as const
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('2d canvas context unavailable')
-
-  // Black = "off" (transparent on the HUD); white = fully lit green.
-  ctx.fillStyle = '#000000'
-  ctx.fillRect(0, 0, width, height)
-  draw(ctx, width, height)
-
-  const blob: Blob = await new Promise((resolve, reject) => {
-    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
-  })
-  return new Uint8Array(await blob.arrayBuffer())
-}
+/**
+ * HUD image tile. Confirmed on-device: an image wider than 288 is rejected and
+ * breaks page creation, so the moving graphics live in ONE centered 288×144
+ * image (no seam → no tearing). Full-width elements must be TEXT containers.
+ */
+export const TILES = [{ id: 1, name: 'hud', x: 144, y: 72, w: 288, h: 144 }] as const
 
 /** Boresight cross: a small centered plus, the fixed airframe reference. */
 export function drawBoresightCross(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
-  const arm = 9
+  const arm = 11
   ctx.strokeStyle = '#ffffff'
   ctx.lineWidth = 2
   ctx.beginPath()
@@ -49,9 +38,9 @@ export function drawBoresightCross(ctx: CanvasRenderingContext2D, cx: number, cy
 /** Flight path marker: the "winged circle" velocity vector — a circle with two
  * horizontal wings and a short vertical stub on top. */
 export function drawFlightPathMarker(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
-  const r = 8
-  const wing = 15
-  const stub = 10
+  const r = 10
+  const wing = 18
+  const stub = 12
 
   ctx.strokeStyle = '#ffffff'
   ctx.lineWidth = 2
@@ -72,7 +61,7 @@ export const PITCH_PX_PER_DEG = 3
 
 const LADDER_STEP_DEG = 10
 const LADDER_MAX_DEG = 40
-const RUNG_OUTER = 116 // outer end of a numbered rung, near the layer edges
+const RUNG_OUTER = 116 // outer end of a numbered rung, inside the 288-wide tile
 const RUNG_SEG = 26 // length of each short rung segment (px)
 
 /** One pitch-ladder rung at screen y. Angle 0 is the long horizon line with a
@@ -118,7 +107,7 @@ function drawRung(ctx: CanvasRenderingContext2D, w: number, angle: number, y: nu
 
   const label = String(Math.abs(angle))
   ctx.fillStyle = '#ffffff'
-  ctx.font = '10px sans-serif'
+  ctx.font = '12px sans-serif'
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'right'
   ctx.fillText(label, -RUNG_OUTER - 4, y)
@@ -128,7 +117,7 @@ function drawRung(ctx: CanvasRenderingContext2D, w: number, angle: number, y: nu
 
 /**
  * Pitch ladder: the horizon (0°) plus numbered climb/dive rungs, pitched by
- * `pitchPx` and rolled by `rollRad`. Rungs off the layer are skipped.
+ * `pitchPx` and rolled by `rollRad`. Rungs off the canvas are skipped.
  */
 export function drawPitchLadder(
   ctx: CanvasRenderingContext2D,
@@ -148,7 +137,7 @@ export function drawPitchLadder(
   ctx.restore()
 }
 
-/** Live dynamic state for the central HUD symbology. */
+/** Live dynamic state for the HUD symbology. */
 export interface HudState {
   fpm: { x: number; y: number }
   horizonPx: number
@@ -156,12 +145,38 @@ export interface HudState {
 }
 
 /**
- * Composite the central HUD symbology onto the graphics layer (local coords):
- * horizon (pitch/roll), fixed boresight cross, and the flight path marker.
+ * Composite the whole-canvas HUD symbology (local coords): horizon/pitch ladder
+ * (pitch/roll), fixed boresight cross, and the flight path marker.
  */
 export function drawHud(ctx: CanvasRenderingContext2D, w: number, h: number, state: HudState): void {
   const cx = w / 2
   drawPitchLadder(ctx, w, h, state.horizonPx, state.rollRad)
   drawBoresightCross(ctx, cx, Math.round(h * 0.28))
   drawFlightPathMarker(ctx, cx + state.fpm.x, Math.round(h / 2) + state.fpm.y)
+}
+
+/** Render one tile of the full HUD to PNG bytes (draw the whole HUD shifted so
+ * this tile's region lands in the tile canvas). */
+export async function renderTilePng(
+  tile: { x: number; y: number; w: number; h: number },
+  state: HudState,
+): Promise<Uint8Array> {
+  const canvas = document.createElement('canvas')
+  canvas.width = tile.w
+  canvas.height = tile.h
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('2d canvas context unavailable')
+
+  ctx.fillStyle = '#000000'
+  ctx.fillRect(0, 0, tile.w, tile.h)
+  ctx.save()
+  ctx.translate(-tile.x, -tile.y)
+  drawHud(ctx, CANVAS.width, CANVAS.height, state)
+  ctx.restore()
+
+  const blob: Blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
+  })
+  return new Uint8Array(await blob.arrayBuffer())
 }
