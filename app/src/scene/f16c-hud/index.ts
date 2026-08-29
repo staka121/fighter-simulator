@@ -3,7 +3,7 @@ import type { Scene } from '../types'
 import { buildView } from './view'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
 import { registerImuSampler, type ImuSample } from './event-handlers/registerImuSampler'
-import { startFpmDriver } from './fpmDriver'
+import { startHudDriver } from './hudDriver'
 
 /**
  * The F-16C HUD scene: renders fighter HUD symbology and keeps it up while the
@@ -27,7 +27,7 @@ export function createF16cHudScene(): Scene {
       cleanups = [
         registerExitOnDoubleTap(bridge),
         registerImuSampler(bridge, imu),
-        startFpmDriver(bridge, imu),
+        startHudDriver(bridge, imu),
         () => void bridge.imuControl(false),
       ]
     },

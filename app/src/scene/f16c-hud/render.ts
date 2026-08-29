@@ -66,18 +66,102 @@ export function drawFlightPathMarker(ctx: CanvasRenderingContext2D, cx: number, 
   ctx.stroke()
 }
 
+/** Pixels per degree of pitch — shared by the driver (horizon position) and the
+ * ladder (rung spacing) so they stay consistent. */
+export const PITCH_PX_PER_DEG = 3
+
+const LADDER_STEP_DEG = 10
+const LADDER_MAX_DEG = 40
+const RUNG_OUTER = 116 // outer end of a numbered rung, near the layer edges
+const RUNG_SEG = 26 // length of each short rung segment (px)
+
+/** One pitch-ladder rung at screen y. Angle 0 is the long horizon line with a
+ * center gap; numbered rungs are short segments pushed to both ends with the
+ * angle outboard and a tick bending toward the horizon (climb solid, dive
+ * dashed). */
+function drawRung(ctx: CanvasRenderingContext2D, w: number, angle: number, y: number): void {
+  const neg = angle < 0
+  const tick = neg ? -6 : 6
+
+  ctx.strokeStyle = '#ffffff'
+  ctx.lineWidth = 2
+  ctx.setLineDash(neg ? [5, 4] : [])
+  ctx.beginPath()
+
+  if (angle === 0) {
+    const half = w / 2 - 6
+    const gap = 24
+    ctx.moveTo(-half, y)
+    ctx.lineTo(-gap, y)
+    ctx.moveTo(gap, y)
+    ctx.lineTo(half, y)
+    ctx.moveTo(-gap, y)
+    ctx.lineTo(-gap, y + 6)
+    ctx.moveTo(gap, y)
+    ctx.lineTo(gap, y + 6)
+    ctx.stroke()
+    ctx.setLineDash([])
+    return
+  }
+
+  const inner = RUNG_OUTER - RUNG_SEG
+  ctx.moveTo(-RUNG_OUTER, y)
+  ctx.lineTo(-inner, y)
+  ctx.moveTo(inner, y)
+  ctx.lineTo(RUNG_OUTER, y)
+  ctx.moveTo(-inner, y)
+  ctx.lineTo(-inner, y + tick)
+  ctx.moveTo(inner, y)
+  ctx.lineTo(inner, y + tick)
+  ctx.stroke()
+  ctx.setLineDash([])
+
+  const label = String(Math.abs(angle))
+  ctx.fillStyle = '#ffffff'
+  ctx.font = '10px sans-serif'
+  ctx.textBaseline = 'middle'
+  ctx.textAlign = 'right'
+  ctx.fillText(label, -RUNG_OUTER - 4, y)
+  ctx.textAlign = 'left'
+  ctx.fillText(label, RUNG_OUTER + 4, y)
+}
+
 /**
- * Composite the central HUD symbology onto the graphics layer (local coords).
- * The boresight cross is fixed; the flight path marker is offset by `fpm`
- * (its live velocity-vector deflection from boresight).
+ * Pitch ladder: the horizon (0°) plus numbered climb/dive rungs, pitched by
+ * `pitchPx` and rolled by `rollRad`. Rungs off the layer are skipped.
  */
-export function drawHud(
+export function drawPitchLadder(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
-  fpm: { x: number; y: number } = { x: 0, y: 0 },
+  pitchPx: number,
+  rollRad: number,
 ): void {
+  ctx.save()
+  ctx.translate(w / 2, h / 2)
+  ctx.rotate(rollRad)
+  for (let a = -LADDER_MAX_DEG; a <= LADDER_MAX_DEG; a += LADDER_STEP_DEG) {
+    const y = pitchPx - a * PITCH_PX_PER_DEG
+    if (y < -h / 2 - 4 || y > h / 2 + 4) continue
+    drawRung(ctx, w, a, y)
+  }
+  ctx.restore()
+}
+
+/** Live dynamic state for the central HUD symbology. */
+export interface HudState {
+  fpm: { x: number; y: number }
+  horizonPx: number
+  rollRad: number
+}
+
+/**
+ * Composite the central HUD symbology onto the graphics layer (local coords):
+ * horizon (pitch/roll), fixed boresight cross, and the flight path marker.
+ */
+export function drawHud(ctx: CanvasRenderingContext2D, w: number, h: number, state: HudState): void {
   const cx = w / 2
+  drawPitchLadder(ctx, w, h, state.horizonPx, state.rollRad)
   drawBoresightCross(ctx, cx, Math.round(h * 0.28))
-  drawFlightPathMarker(ctx, cx + fpm.x, Math.round(h / 2) + fpm.y)
+  drawFlightPathMarker(ctx, cx + state.fpm.x, Math.round(h / 2) + state.fpm.y)
 }

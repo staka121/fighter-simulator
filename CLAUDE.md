@@ -67,6 +67,14 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
   `register<Thing>`; files match their primary export.
 - After changing app code, run `make typecheck` before considering it done.
 
+## Visual iteration (browser preview)
+
+For tuning the LOOK of graphical symbology without scanning the glasses each
+time, use the dev-only preview: `make dev`, then open
+`http://localhost:5173/preview.html` in a browser. It renders the real
+`drawHud` code to a canvas (green-on-black, with pitch/roll/FPM sliders).
+`preview.html` / `src/preview.ts` are dev tools — not part of the packaged app.
+
 ## Testing on real hardware
 
 Previewing on the glasses needs the **user** to scan a QR with the phone and
