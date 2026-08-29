@@ -1,6 +1,6 @@
 # Even G2 HUD app — dev shortcuts. Run these on the host (they wrap docker compose).
 COMPOSE = docker compose
-APP_DIR = /app/hello-hud
+APP_DIR = /workspace/app
 PORT   ?= 5173
 # Mac LAN IP the phone connects to. Auto-detected; override with `make qr IP=x.x.x.x`.
 IP     ?= $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)

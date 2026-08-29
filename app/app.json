@@ -1,7 +1,7 @@
 {
-  "package_id": "com.example.evenhubminimal",
+  "package_id": "com.staka121.fightersimulator",
   "edition": "202601",
-  "name": "Even Hub Minimal",
+  "name": "F-16C HUD",
   "version": "0.1.0",
   "min_app_version": "2.0.0",
   "min_sdk_version": "0.0.10",

@@ -8,7 +8,7 @@ the full design; this file is the short list of rules to follow.
 An Even Hub app for the Even Realities **G2** smart glasses. The app is a
 **Vite + TypeScript web app that runs on the phone** (inside the Even app's
 WebView); the glasses only render. All glasses commands go through the
-`EvenAppBridge` from `waitForEvenAppBridge()`. App code lives in `hello-hud/`.
+`EvenAppBridge` from `waitForEvenAppBridge()`. App code lives in `app/`.
 
 ## Environment — always use Docker, never the host
 
@@ -25,7 +25,7 @@ make help        # list targets
 ```
 
 Run npm/npx/tsc **inside** the container (`make sh`, or
-`docker compose exec dev bash -lc 'cd /app/hello-hud && ...'`), not on the host.
+`docker compose exec dev bash -lc 'cd /workspace/app && ...'`), not on the host.
 
 ## Architecture rules (see ARCHITECTURE.md for detail)
 

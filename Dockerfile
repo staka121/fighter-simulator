@@ -6,7 +6,7 @@
 # here. Run the CLI through the project, e.g. `npx evenhub qr ...`.
 FROM node:22-bookworm
 
-WORKDIR /app
+WORKDIR /workspace
 
 # Vite dev server port. The phone (Even app) reaches this over the LAN.
 EXPOSE 5173
