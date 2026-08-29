@@ -9,25 +9,70 @@
         padding: 16px;
         background: #111;
         color: #bbb;
-        font: 13px/1.5 -apple-system, system-ui, sans-serif;
+        font:
+          13px/1.5 -apple-system,
+          system-ui,
+          sans-serif;
       }
-      h3 { margin: 0 0 8px; font-weight: 600; color: #ddd; }
+      h3 {
+        margin: 0 0 8px;
+        font-weight: 600;
+        color: #ddd;
+      }
       /* Emulate the glasses: draw white-on-black, tint green in preview.ts. */
-      #hud { display: block; background: #000; margin: 12px 0; }
-      .ctl { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-      .ctl label { width: 70px; }
-      .ctl input { width: 320px; }
-      .ctl output { width: 48px; color: #7f7; }
-      button { margin-top: 8px; }
+      #hud {
+        display: block;
+        background: #000;
+        margin: 12px 0;
+      }
+      .ctl {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0;
+      }
+      .ctl label {
+        width: 70px;
+      }
+      .ctl input {
+        width: 320px;
+      }
+      .ctl output {
+        width: 48px;
+        color: #7f7;
+      }
+      button {
+        margin-top: 8px;
+      }
     </style>
   </head>
   <body>
     <h3>HUD preview — 576×288 per eye (dev tool, not the packaged app)</h3>
     <canvas id="hud"></canvas>
-    <div class="ctl"><label>Pitch°</label><input id="pitch" type="range" min="-40" max="40" step="1" value="0" /><output id="pitchv">0</output></div>
-    <div class="ctl"><label>Roll°</label><input id="roll" type="range" min="-45" max="45" step="1" value="0" /><output id="rollv">0</output></div>
-    <div class="ctl"><label>FPM X</label><input id="fpmx" type="range" min="-80" max="80" step="1" value="0" /><output id="fpmxv">0</output></div>
-    <div class="ctl"><label>FPM Y</label><input id="fpmy" type="range" min="-80" max="80" step="1" value="0" /><output id="fpmyv">0</output></div>
+    <div class="ctl">
+      <label>Pitch°</label
+      ><input id="pitch" type="range" min="-40" max="40" step="1" value="0" /><output id="pitchv"
+        >0</output
+      >
+    </div>
+    <div class="ctl">
+      <label>Roll°</label
+      ><input id="roll" type="range" min="-45" max="45" step="1" value="0" /><output id="rollv"
+        >0</output
+      >
+    </div>
+    <div class="ctl">
+      <label>FPM X</label
+      ><input id="fpmx" type="range" min="-80" max="80" step="1" value="0" /><output id="fpmxv"
+        >0</output
+      >
+    </div>
+    <div class="ctl">
+      <label>FPM Y</label
+      ><input id="fpmy" type="range" min="-80" max="80" step="1" value="0" /><output id="fpmyv"
+        >0</output
+      >
+    </div>
     <button id="reset">Reset</button>
     <script type="module" src="/src/preview.ts"></script>
   </body>

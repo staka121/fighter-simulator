@@ -1,0 +1,4 @@
+# The Dockerfile is a local DEV container (Node 22 + Even Hub tooling), not a
+# shipped image; running as root is intentional for the dev workflow, so the
+# "missing-user" rule doesn't apply here.
+Dockerfile

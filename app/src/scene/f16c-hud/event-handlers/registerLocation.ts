@@ -26,7 +26,11 @@ export function registerLocation(
     if (v === shown) return
     shown = v
     void bridge.textContainerUpgrade(
-      new TextContainerUpgrade({ containerID: speedBoxID, containerName: speedBoxName, content: v }),
+      new TextContainerUpgrade({
+        containerID: speedBoxID,
+        containerName: speedBoxName,
+        content: v,
+      }),
     )
   }
 

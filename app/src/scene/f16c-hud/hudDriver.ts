@@ -58,8 +58,12 @@ export function startHudDriver(bridge: EvenAppBridge, imu: ImuSample): () => voi
       filt.x += (imu.x - filt.x) * FPM_SMOOTH
       filt.y += (imu.y - filt.y) * FPM_SMOOTH
       if (imu.received && !baseFpm) baseFpm = { x: filt.x, y: filt.y }
-      const tx = baseFpm ? clamp(SIGN_YAW * (filt.y - baseFpm.y) * FPM_GAIN, -FPM_MAX_X, FPM_MAX_X) : 0
-      const ty = baseFpm ? clamp(SIGN_PITCH_FPM * (filt.x - baseFpm.x) * FPM_GAIN, -FPM_MAX_Y, FPM_MAX_Y) : 0
+      const tx = baseFpm
+        ? clamp(SIGN_YAW * (filt.y - baseFpm.y) * FPM_GAIN, -FPM_MAX_X, FPM_MAX_X)
+        : 0
+      const ty = baseFpm
+        ? clamp(SIGN_PITCH_FPM * (filt.x - baseFpm.x) * FPM_GAIN, -FPM_MAX_Y, FPM_MAX_Y)
+        : 0
       vel.x = clamp((vel.x + (tx - pos.x) * FPM_STIFF) * FPM_DAMP, -FPM_VMAX, FPM_VMAX)
       vel.y = clamp((vel.y + (ty - pos.y) * FPM_STIFF) * FPM_DAMP, -FPM_VMAX, FPM_VMAX)
       pos.x = clamp(pos.x + vel.x, -FPM_MAX_X, FPM_MAX_X)

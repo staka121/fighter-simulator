@@ -60,6 +60,17 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
 - `containerTotalNum` 1–12; at most 8 text containers; initial text ≲1000 chars.
 - Canvas is `576 × 288` per eye, origin top-left, 4-bit grayscale (green).
 
+## CI & PR flow
+
+- `main` is protected — land changes via a pull request, never push to `main`.
+  Branch, push, open a PR; CI must pass before merge.
+- CI (`.github/workflows/ci.yml`) runs in `app/`: `npm run typecheck`, `lint`
+  (ESLint), `format:check` (Prettier), `test` (Vitest), `build` — plus secret
+  scanning (betterleaks) and SAST (semgrep). Run these locally before pushing:
+  `cd app` then `npm run typecheck && npm run lint && npm run format:check &&
+  npm test`. `npm run format` auto-fixes style. Add a Vitest `*.test.ts` for new
+  pure logic.
+
 ## Conventions
 
 - **English only** for all code, comments, and committed docs (public repo).

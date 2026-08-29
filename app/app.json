@@ -6,8 +6,6 @@
   "min_app_version": "2.0.0",
   "min_sdk_version": "0.0.10",
   "entrypoint": "index.html",
-  "permissions": [
-    { "name": "location", "desc": "Shows your walking speed on the HUD." }
-  ],
+  "permissions": [{ "name": "location", "desc": "Shows your walking speed on the HUD." }],
   "supported_languages": ["en"]
 }
