@@ -1,6 +1,8 @@
 import type { Store } from '../scene/f16c-hud/store'
 import { parseGoalInput, formatCoord } from './coords'
 import { saveGoals } from './goalStorage'
+import { mountGoalMap } from './map'
+import { fetchElevation } from './elevation'
 
 const STYLE_ID = 'goal-panel-style'
 
@@ -22,7 +24,11 @@ const CSS = `
 .gp-n { opacity: 0.6; font-variant-numeric: tabular-nums; }
 .gp-c { font-variant-numeric: tabular-nums; }
 .gp-del { background: none; border: 0; color: #ff8a8a; font-size: 16px; padding: 2px 6px; }
+.gp-map { height: 220px; border-radius: 8px; overflow: hidden; margin: 10px 0 4px; background: #232323; }
+.gp-hint { font-size: 11px; opacity: 0.5; margin: 0 0 2px; }
 .gp-sep { border: 0; border-top: 1px solid #3a3a3a; margin: 12px 0; }
+/* Leaflet controls readable on the dark surface. */
+.gp-map .leaflet-control-attribution { font-size: 10px; }
 .gp-field { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 13px; opacity: 0.8; }
 .gp-field input { flex: 1; background: #232323; border: 1px solid #444; border-radius: 8px; color: #e5e5e5; padding: 10px 12px; font-size: 16px; font-variant-numeric: tabular-nums; }
 .gp-err { min-height: 16px; margin-top: 8px; font-size: 12px; color: #ff8a8a; }
@@ -54,9 +60,11 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
         <div class="gp-row"><span>Now</span><b id="gp-now">acquiring…</b></div>
         <div class="gp-list" id="gp-list"></div>
         <hr class="gp-sep" />
+        <p class="gp-hint">Tap the map to pick a goal, or type coordinates.</p>
+        <div class="gp-map" id="gp-map"></div>
         <label class="gp-field">Lat<input id="gp-lat" inputmode="decimal" placeholder="35.68120" /></label>
         <label class="gp-field">Lon<input id="gp-lon" inputmode="decimal" placeholder="139.76710" /></label>
-        <label class="gp-field">Alt<input id="gp-alt" inputmode="decimal" placeholder="metres (optional)" /></label>
+        <label class="gp-field">Alt<input id="gp-alt" inputmode="decimal" placeholder="auto from location" /></label>
         <div id="gp-err" class="gp-err"></div>
         <div class="gp-btns"><button id="gp-add" class="gp-btn">Add Goal</button></div>
       </div>
@@ -69,6 +77,24 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
   const latInput = pick<HTMLInputElement>('gp-lat')
   const lonInput = pick<HTMLInputElement>('gp-lon')
   const altInput = pick<HTMLInputElement>('gp-alt')
+
+  // Altitude is hard to enter by hand, so derive it from the coordinate via the
+  // elevation API and fill the field. Editable, so it can still be overridden.
+  const autofillAlt = async (lat: number, lon: number) => {
+    altInput.value = ''
+    altInput.placeholder = 'fetching…'
+    const elev = await fetchElevation(lat, lon)
+    altInput.placeholder = 'auto from location'
+    if (elev != null) altInput.value = String(Math.round(elev))
+  }
+
+  // Tapping the map fills the add form and auto-fetches the altitude.
+  const goalMap = mountGoalMap(pick('gp-map'), store, (lat, lon) => {
+    latInput.value = lat.toFixed(5)
+    lonInput.value = lon.toFixed(5)
+    errEl.textContent = ''
+    void autofillAlt(lat, lon)
+  })
 
   const renderNow = () => {
     nowEl.textContent =
@@ -116,9 +142,17 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
     }
     saveGoals(store)
     renderList()
+    goalMap.refreshGoals()
   })
 
-  pick<HTMLButtonElement>('gp-add').addEventListener('click', () => {
+  pick<HTMLButtonElement>('gp-add').addEventListener('click', async () => {
+    // Derive the altitude from the coordinates when the field is left blank
+    // (e.g. coordinates typed by hand rather than picked on the map).
+    if (altInput.value.trim() === '') {
+      const lat = Number(latInput.value)
+      const lon = Number(lonInput.value)
+      if (Number.isFinite(lat) && Number.isFinite(lon)) await autofillAlt(lat, lon)
+    }
     const goal = parseGoalInput(latInput.value, lonInput.value, altInput.value)
     if (!goal) {
       errEl.textContent = 'Enter a valid lat (−90..90), lon (−180..180), alt numeric.'
@@ -132,5 +166,6 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
     lonInput.value = ''
     altInput.value = ''
     renderList()
+    goalMap.refreshGoals()
   })
 }
