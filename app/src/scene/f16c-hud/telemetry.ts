@@ -1,20 +1,35 @@
-// Shared walking telemetry, written by the location/IMU handlers and read by the
-// left-data driver. A "walking HUD" reinterpretation of the F-16C left block:
-//   ARM  → master arm (missile) state          (static for now)
-//   AVG  → average moving speed (km/h)          (GPS)
-//   INT  → exercise intensity 0–100             (IMU shake; no heart-rate API)
-//   cat  → movement class from speed            (STOP/WALK/RUN/VEHICLE)
-//   GL   → goal bearing/distance                (deferred → "---")
+// Shared state for the left data block, written by the location/IMU handlers
+// and the missile system, and rendered as one multi-line container so every
+// line shares the same spacing. A "walking HUD" reinterpretation of the F-16C
+// left block:
+//   ARM/SAFE <n> → master arm + missiles                (missile system)
+//   AVG          → average moving speed (km/h)          (GPS)
+//   INT          → exercise intensity 0–100             (IMU shake)
+//   cat          → movement class from speed            (STOP/WALK/RUN/VEHICLE)
+export const AMMO_START = 6
+
 export interface Telemetry {
+  // movement
   speedKmh: number | null // latest GPS speed
   speedOk: boolean // location updates running
   avgSum: number // Σ moving-speed samples
   avgCount: number // count of moving-speed samples
   energy: number // EWMA of |accel| deviation from 1 g
+  // weapons
+  armed: boolean
+  ammo: number
 }
 
 export function createTelemetry(): Telemetry {
-  return { speedKmh: null, speedOk: true, avgSum: 0, avgCount: 0, energy: 0 }
+  return {
+    speedKmh: null,
+    speedOk: true,
+    avgSum: 0,
+    avgCount: 0,
+    energy: 0,
+    armed: true,
+    ammo: AMMO_START,
+  }
 }
 
 function category(kmh: number | null): string {
@@ -25,11 +40,10 @@ function category(kmh: number | null): string {
   return 'VEHICLE'
 }
 
-/** Build the left data block content. The fixed OS font fits ~3 lines in the
- * left margin, so only the movement metrics live here; ARM (weapons) and GL
- * (goal) are handled elsewhere. */
+/** Build the left data block content (one container, uniform line spacing). */
 export function formatLeftData(t: Telemetry): string {
+  const weapons = `${t.armed ? 'ARM' : 'SAFE'} ${t.ammo}`
   const avg = t.avgCount > 0 ? (t.avgSum / t.avgCount).toFixed(1) : '0.0'
   const intensity = Math.min(100, Math.round(t.energy * 200))
-  return `AVG ${avg}\nINT ${intensity}\n${category(t.speedKmh)}`
+  return `${weapons}\nAVG ${avg}\nINT ${intensity}\n${category(t.speedKmh)}`
 }

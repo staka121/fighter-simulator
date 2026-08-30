@@ -1,35 +1,36 @@
-import { TextContainerUpgrade, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
-import { READOUTS, AMMO_START } from './readouts'
+import { AMMO_START, type Telemetry } from './telemetry'
 import { playLaunchSound, playEmptySound } from './sound'
 
 /**
- * Missile / master-arm state for the tap-to-fire feature. The bottom-left
- * readout shows `ARM <n>` (master arm + remaining missiles); firing plays a
- * launch sound and decrements. No-op when empty.
+ * Master arm + missile logic. State lives in the shared `telemetry` so the ARM/
+ * SAFE line renders with the rest of the left block; `refresh` re-renders that
+ * block immediately (a glasses tap fires, a menu item toggles arm / reloads).
+ * Firing plays a launch sound and decrements; a blocked shot (safe or empty)
+ * buzzes.
  */
-export function createMissileSystem(bridge: EvenAppBridge) {
-  let ammo = AMMO_START
-
-  const render = () => {
-    void bridge.textContainerUpgrade(
-      new TextContainerUpgrade({
-        containerID: READOUTS.ammo.id,
-        containerName: READOUTS.ammo.name,
-        content: `ARM ${ammo}`,
-      }),
-    )
-  }
-
+export function createMissileSystem(telemetry: Telemetry, refresh: () => void) {
   return {
-    getAmmo: () => ammo,
+    getAmmo: () => telemetry.ammo,
+    isArmed: () => telemetry.armed,
+
+    toggleArm() {
+      telemetry.armed = !telemetry.armed
+      refresh()
+    },
+
+    reload() {
+      telemetry.ammo = AMMO_START
+      refresh()
+    },
+
     fire() {
-      if (ammo <= 0) {
+      if (!telemetry.armed || telemetry.ammo <= 0) {
         playEmptySound()
         return
       }
-      ammo -= 1
+      telemetry.ammo -= 1
       playLaunchSound()
-      render()
+      refresh()
     },
   }
 }

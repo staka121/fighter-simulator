@@ -5,6 +5,7 @@ import {
 } from '@evenrealities/even_hub_sdk'
 import { CANVAS, TILES } from './render'
 import { buildReadoutContainers } from './readouts'
+import { buildMenu } from './menu'
 
 /** Image containers can't capture input, so a full-canvas transparent text
  * container sits behind them to receive taps. */
@@ -44,5 +45,6 @@ export function buildView(): CreateStartUpPageContainer {
     containerTotalNum: TILES.length + 1 + readouts.length,
     textObject: [eventLayer, ...readouts],
     imageObject: images,
+    menuObject: buildMenu(),
   })
 }

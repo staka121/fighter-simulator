@@ -4,8 +4,10 @@ import { buildView } from './view'
 import { READOUTS } from './readouts'
 import { createTelemetry } from './telemetry'
 import { createMissileSystem } from './missileSystem'
+import { MENU_ITEMS } from './menu'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
 import { registerFireOnTap } from './event-handlers/registerFireOnTap'
+import { registerMenu } from './event-handlers/registerMenu'
 import { registerImuSampler, type ImuSample } from './event-handlers/registerImuSampler'
 import { registerLocation } from './event-handlers/registerLocation'
 import { registerIntensity } from './event-handlers/registerIntensity'
@@ -30,17 +32,27 @@ export function createF16cHudScene(): Scene {
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
       const telemetry = createTelemetry()
-      const missiles = createMissileSystem(bridge)
+      const leftData = startLeftDataDriver(
+        bridge,
+        telemetry,
+        READOUTS.leftData.id,
+        READOUTS.leftData.name,
+      )
+      const missiles = createMissileSystem(telemetry, leftData.refresh)
       await bridge.imuControl(true, ImuReportPace.P500)
 
       cleanups = [
         registerExitOnDoubleTap(bridge),
         registerFireOnTap(bridge, () => missiles.fire()),
+        registerMenu(bridge, {
+          [MENU_ITEMS.toggleArm]: () => missiles.toggleArm(),
+          [MENU_ITEMS.reload]: () => missiles.reload(),
+        }),
         registerImuSampler(bridge, imu),
         registerIntensity(bridge, telemetry),
         registerLocation(bridge, telemetry, READOUTS.airspeed.id, READOUTS.airspeed.name),
         startHudDriver(bridge, imu),
-        startLeftDataDriver(bridge, telemetry, READOUTS.leftData.id, READOUTS.leftData.name),
+        leftData.stop,
         () => void bridge.imuControl(false),
       ]
     },

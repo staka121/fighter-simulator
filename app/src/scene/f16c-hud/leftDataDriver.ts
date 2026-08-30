@@ -4,34 +4,41 @@ import { formatLeftData, type Telemetry } from './telemetry'
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 /**
- * Refresh the left data block once a second from the shared telemetry (ARM /
- * avg speed / intensity / movement class / goal). Text updates are cheap, and
- * we only send when the rendered content changed. Returns a stop fn.
+ * Render the left data block (weapons + movement) from the shared telemetry.
+ * The loop refreshes once a second (for avg/intensity/movement); the missile
+ * system calls `refresh` directly for instant weapons feedback. Only writes
+ * when the rendered content changed. Returns `stop` and `refresh`.
  */
 export function startLeftDataDriver(
   bridge: EvenAppBridge,
   telemetry: Telemetry,
   containerID: number,
   containerName: string,
-): () => void {
+): { stop: () => void; refresh: () => void } {
   let running = true
   let shown = ''
 
+  const refresh = () => {
+    const content = formatLeftData(telemetry)
+    if (content === shown) return
+    shown = content
+    void bridge.textContainerUpgrade(
+      new TextContainerUpgrade({ containerID, containerName, content }),
+    )
+  }
+
   async function loop() {
     while (running) {
-      const content = formatLeftData(telemetry)
-      if (content !== shown) {
-        shown = content
-        await bridge.textContainerUpgrade(
-          new TextContainerUpgrade({ containerID, containerName, content }),
-        )
-      }
+      refresh()
       await sleep(1000)
     }
   }
 
   void loop()
-  return () => {
-    running = false
+  return {
+    stop() {
+      running = false
+    },
+    refresh,
   }
 }

@@ -2,20 +2,18 @@ import { TextContainerProperty } from '@evenrealities/even_hub_sdk'
 
 // Text readouts around the central graphics panel (panel edges: left 144,
 // right 432, bottom 216). Text containers can be full-width and update
-// independently, so they don't tear like tiled images. Values are placeholders
-// until wired to real data; ammo is updated live by the missile handler.
+// independently, so they don't tear like tiled images. The left block (weapons
+// + movement) is one container rendered from telemetry, so all its lines share
+// the same spacing.
 //
-// Budget: max 8 text containers per page. Event layer (1) + these (6) = 7.
+// Budget: max 8 text containers per page. Event layer (1) + these (5) = 6.
 export const READOUTS = {
   airspeed: { id: 3, name: 'airspeed' },
   altitude: { id: 4, name: 'altitude' },
   leftData: { id: 5, name: 'leftData' },
   rightData: { id: 6, name: 'rightData' },
   heading: { id: 7, name: 'heading' },
-  ammo: { id: 8, name: 'ammo' },
 } as const
-
-export const AMMO_START = 6
 
 interface TextSpec {
   id: number
@@ -78,16 +76,17 @@ export function buildReadoutContainers(): TextContainerProperty[] {
       boxed: true,
       pad: 1,
     }),
-    // Left data block (below the airspeed box): walking telemetry, filled live
-    // by the left-data driver. ARM / avg speed / intensity / movement / goal.
+    // Left data block: weapons (ARM/SAFE + missiles) then walking telemetry
+    // (avg speed / intensity / movement class) — one container, uniform line
+    // spacing, filled live by the left-data driver. Below the airspeed box.
     container({
       id: r.leftData.id,
       name: r.leftData.name,
       x: 8,
       y: 162,
       w: 134,
-      h: 92,
-      content: 'AVG 0.0\nINT 0\nSTOP',
+      h: 124,
+      content: 'ARM 6\nAVG 0.0\nINT 0\nSTOP',
     }),
     // Right data block (below the altitude box).
     container({
@@ -108,17 +107,6 @@ export function buildReadoutContainers(): TextContainerProperty[] {
       w: 216,
       h: 40,
       content: '     ▲\n 12   [139]   15',
-    }),
-    // Weapons status (master arm + missiles), bottom-left. Driven by the
-    // missile system: `ARM <n>` while armed, decrementing on each shot.
-    container({
-      id: r.ammo.id,
-      name: r.ammo.name,
-      x: 8,
-      y: 256,
-      w: 96,
-      h: 32,
-      content: `ARM ${AMMO_START}`,
     }),
   ]
 }

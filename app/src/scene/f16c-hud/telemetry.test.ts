@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { createTelemetry, formatLeftData } from './telemetry'
 
 describe('formatLeftData', () => {
-  it('shows a zero average and STOP when idle', () => {
-    expect(formatLeftData(createTelemetry())).toBe('AVG 0.0\nINT 0\nSTOP')
+  it('shows armed full load, zero average and STOP when idle', () => {
+    expect(formatLeftData(createTelemetry())).toBe('ARM 6\nAVG 0.0\nINT 0\nSTOP')
   })
 
   it('averages moving speed and classifies walking', () => {
