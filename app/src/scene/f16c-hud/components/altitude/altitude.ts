@@ -18,7 +18,7 @@ export const ALTITUDE = { id: 4, name: 'altitude' } as const
 export function buildAltitudeContainer(): TextContainerProperty {
   return new TextContainerProperty({
     xPosition: 436,
-    yPosition: 125,
+    yPosition: 96,
     width: 68,
     height: 32,
     borderWidth: 1,

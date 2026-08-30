@@ -10,7 +10,10 @@ export function loadGoal(store: Store): void {
     if (!raw) return
     const g = JSON.parse(raw) as Partial<GoalPoint>
     if (typeof g?.lat === 'number' && typeof g?.lon === 'number') {
-      store.goal = { lat: g.lat, lon: g.lon }
+      store.goal =
+        typeof g.alt === 'number'
+          ? { lat: g.lat, lon: g.lon, alt: g.alt }
+          : { lat: g.lat, lon: g.lon }
     }
   } catch {
     // ignore unavailable / corrupt storage

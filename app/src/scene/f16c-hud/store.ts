@@ -5,10 +5,11 @@
 // not a reach into any one component.
 export const AMMO_START = 6
 
-/** A geographic point (WGS84 degrees). */
+/** A geographic point (WGS84 degrees), with an optional elevation in metres. */
 export interface GoalPoint {
   lat: number
   lon: number
+  alt?: number
 }
 
 export interface Store {

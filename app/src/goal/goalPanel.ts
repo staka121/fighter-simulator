@@ -46,6 +46,7 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
         <div class="gp-row"><span>Goal</span><b id="gp-goal">none</b></div>
         <label class="gp-field">Lat<input id="gp-lat" inputmode="decimal" placeholder="35.68120" /></label>
         <label class="gp-field">Lon<input id="gp-lon" inputmode="decimal" placeholder="139.76710" /></label>
+        <label class="gp-field">Alt<input id="gp-alt" inputmode="decimal" placeholder="metres (optional)" /></label>
         <div id="gp-err" class="gp-err"></div>
         <div class="gp-btns">
           <button id="gp-set" class="gp-btn gp-primary">Set Goal</button>
@@ -60,6 +61,7 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
   const errEl = pick('gp-err')
   const latInput = pick<HTMLInputElement>('gp-lat')
   const lonInput = pick<HTMLInputElement>('gp-lon')
+  const altInput = pick<HTMLInputElement>('gp-alt')
 
   const renderNow = () => {
     nowEl.textContent =
@@ -72,15 +74,16 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
   if (store.goal) {
     latInput.value = String(store.goal.lat)
     lonInput.value = String(store.goal.lon)
+    if (store.goal.alt != null) altInput.value = String(store.goal.alt)
   }
   renderNow()
   renderGoal()
   setInterval(renderNow, 1000)
 
   pick<HTMLButtonElement>('gp-set').addEventListener('click', () => {
-    const goal = parseGoalInput(latInput.value, lonInput.value)
+    const goal = parseGoalInput(latInput.value, lonInput.value, altInput.value)
     if (!goal) {
-      errEl.textContent = 'Enter a valid lat (−90..90) and lon (−180..180).'
+      errEl.textContent = 'Enter a valid lat (−90..90), lon (−180..180), alt numeric.'
       return
     }
     errEl.textContent = ''
@@ -94,6 +97,7 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
     saveGoal(null)
     latInput.value = ''
     lonInput.value = ''
+    altInput.value = ''
     errEl.textContent = ''
     renderGoal()
   })

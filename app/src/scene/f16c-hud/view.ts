@@ -8,7 +8,7 @@ import { buildSpeedContainer } from './components/speed'
 import { buildAltitudeContainer } from './components/altitude'
 import { buildHeadingImageContainer } from './components/heading'
 import { buildLeftDataContainer } from './components/left-data'
-import { buildReadoutContainers } from './readouts'
+import { buildGoalNavContainer } from './components/goal-nav'
 import { buildMenu } from './components/weapons'
 
 /** Image containers can't capture input, so a full-canvas transparent text
@@ -47,7 +47,7 @@ export function buildView(): CreateStartUpPageContainer {
     buildSpeedContainer(),
     buildAltitudeContainer(),
     buildLeftDataContainer(),
-    ...buildReadoutContainers(),
+    buildGoalNavContainer(),
   ]
 
   // The heading tape is its own image tile below the panel (see components/heading).

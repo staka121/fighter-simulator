@@ -20,7 +20,7 @@ export const LEFT_DATA = { id: 5, name: 'leftData' } as const
 export function buildLeftDataContainer(): TextContainerProperty {
   return new TextContainerProperty({
     xPosition: 8,
-    yPosition: 162,
+    yPosition: 133,
     width: 134,
     height: 124,
     borderWidth: 0,

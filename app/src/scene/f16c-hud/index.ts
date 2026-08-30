@@ -6,6 +6,7 @@ import { startSpeedDriver } from './components/speed'
 import { startAltitudeDriver } from './components/altitude'
 import { startHeadingTapeDriver } from './components/heading'
 import { startLeftDataDriver } from './components/left-data'
+import { startGoalNavDriver } from './components/goal-nav'
 import type { Store } from './store'
 import { createImageSender } from './image-sender'
 import { createMissileSystem, MENU_ITEMS } from './components/weapons'
@@ -55,6 +56,7 @@ export function createF16cHudScene(store: Store): Scene {
         startHudDriver(send, imu),
         startSpeedDriver(bridge, store),
         startAltitudeDriver(bridge, store),
+        startGoalNavDriver(bridge, store),
         startHeadingTapeDriver(send, store),
         leftData.stop,
         () => void bridge.imuControl(false),

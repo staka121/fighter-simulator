@@ -1,16 +1,22 @@
 import type { GoalPoint } from '../scene/f16c-hud/store'
 
 /**
- * Parse and validate lat/lon input strings into a GoalPoint, or null if either
- * is blank, non-numeric, or out of range (lat ±90, lon ±180).
+ * Parse and validate lat/lon (and optional altitude) input strings into a
+ * GoalPoint, or null if lat/lon is blank, non-numeric, or out of range (lat
+ * ±90, lon ±180). A blank altitude is omitted; a non-numeric altitude is
+ * rejected.
  */
-export function parseGoalInput(latStr: string, lonStr: string): GoalPoint | null {
+export function parseGoalInput(latStr: string, lonStr: string, altStr = ''): GoalPoint | null {
   if (latStr.trim() === '' || lonStr.trim() === '') return null
   const lat = Number(latStr)
   const lon = Number(lonStr)
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null
   if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null
-  return { lat, lon }
+
+  if (altStr.trim() === '') return { lat, lon }
+  const alt = Number(altStr)
+  if (!Number.isFinite(alt)) return null
+  return { lat, lon, alt }
 }
 
 /** Human-readable "lat, lon" to 5 dp, or an em dash when unknown. */

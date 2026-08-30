@@ -18,7 +18,7 @@ export const SPEED = { id: 3, name: 'speed' } as const
 export function buildSpeedContainer(): TextContainerProperty {
   return new TextContainerProperty({
     xPosition: 72,
-    yPosition: 125,
+    yPosition: 96,
     width: 68,
     height: 32,
     borderWidth: 1,
