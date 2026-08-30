@@ -1,7 +1,7 @@
-import { ImageRawDataUpdate, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import { renderTilePng } from './render/renderTilePng'
 import { TILES, PITCH_PX_PER_DEG, type HudState } from './types'
 import type { ImuSample } from '../../event-handlers/registerImuSampler'
+import type { ImageSender } from '../../image-sender'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
@@ -35,10 +35,11 @@ const SIGN_ROLL = -1 // roll angle -> rotation
 /**
  * Drive all dynamic HUD symbology from the IMU in one throttled loop: the
  * flight path marker (spring-damper inertia) and the horizon/ladder (pitch/
- * roll). Re-renders the 2×2 tiles only when state changed, and sends only the
- * tiles whose pixels actually changed. Returns a stop fn.
+ * roll). Re-renders the tiles only when state changed, and sends only the tiles
+ * whose pixels actually changed. Sends go through the shared serial sender so
+ * they never overlap the heading tape's. Returns a stop fn.
  */
-export function startHudDriver(bridge: EvenAppBridge, imu: ImuSample): () => void {
+export function startHudDriver(send: ImageSender, imu: ImuSample): () => void {
   let running = true
 
   const pos = { x: 0, y: 0 }
@@ -93,13 +94,7 @@ export function startHudDriver(bridge: EvenAppBridge, imu: ImuSample): () => voi
             const prev = lastBytes.get(tile.id)
             if (prev && bytesEqual(prev, bytes)) continue
             lastBytes.set(tile.id, bytes)
-            await bridge.updateImageRawData(
-              new ImageRawDataUpdate({
-                containerID: tile.id,
-                containerName: tile.name,
-                imageData: bytes,
-              }),
-            )
+            await send(tile.id, tile.name, bytes)
           } catch (e) {
             console.error('hud tile render failed:', e)
           }

@@ -3,9 +3,10 @@ import type { Scene } from '../types'
 import { buildView } from './view'
 import { startHudDriver } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
-import { startHeadingDriver } from './components/heading'
+import { startHeadingTapeDriver } from './components/heading'
 import { startLeftDataDriver } from './components/left-data'
 import { createStore } from './store'
+import { createImageSender } from './image-sender'
 import { createMissileSystem, MENU_ITEMS } from './components/weapons'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
 import { registerFireOnTap } from './event-handlers/registerFireOnTap'
@@ -32,6 +33,8 @@ export function createF16cHudScene(): Scene {
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
       const store = createStore()
+      // All raw-image sends (panel + heading tape) go through one serial channel.
+      const send = createImageSender(bridge)
       const leftData = startLeftDataDriver(bridge, store)
       const missiles = createMissileSystem(store, leftData.refresh)
       await bridge.imuControl(true, ImuReportPace.P500)
@@ -46,9 +49,9 @@ export function createF16cHudScene(): Scene {
         registerImuSampler(bridge, imu),
         registerIntensity(bridge, store),
         registerLocation(bridge, store),
-        startHudDriver(bridge, imu),
+        startHudDriver(send, imu),
         startSpeedDriver(bridge, store),
-        startHeadingDriver(bridge, store),
+        startHeadingTapeDriver(send, store),
         leftData.stop,
         () => void bridge.imuControl(false),
       ]
