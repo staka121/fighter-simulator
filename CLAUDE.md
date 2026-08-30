@@ -30,8 +30,12 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
 ## Architecture rules (see ARCHITECTURE.md for detail)
 
 - **One scene = one directory** under `src/scene/<name>/`: `index.ts`
-  (`create<Name>Scene()` with `enter`/`leave`), `view.ts` (`buildView()` +
-  shared consts), and `event-handlers/`.
+  (`create<Name>Scene()` with `enter`/`leave`), `view.ts` (`buildView()`),
+  `readouts.ts` (text layout), `event-handlers/`, and `components/`.
+- **Features are components** under `components/<name>/`, each exposing a public
+  API via an **`index.ts` barrel**. Import from the barrel (`./components/<name>`),
+  never a deep path. Split internals (`types.ts`, a `render/` folder, …) only as
+  a component grows. This is the target shape for new features.
 - **Event handlers are `register<Thing>(bridge)`** — they subscribe immediately
   and **return their unsubscribe**. The scene collects these and runs them in
   `leave`. Do **not** name them `use*` or put them in a `hooks/` folder — they
@@ -49,7 +53,8 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
 - Do NOT pass base64 strings or hand-packed raw pixels — they fail
   (`sendFailed` / `imageException`). Only ENCODED image bytes work. Sends must
   be serial. Image containers need a transparent capture text layer behind them.
-  See ARCHITECTURE.md "Graphical symbology" and `scene/f16c-hud/render.ts`.
+  See ARCHITECTURE.md "Graphical symbology" and
+  `scene/f16c-hud/components/center-panel/render/`.
 
 ## Hard SDK constraints
 

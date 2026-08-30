@@ -33,12 +33,21 @@ src/
     ├── types.ts         # The Scene interface (enter / leave).
     └── <name>/          # One scene = one directory = one screen.
         ├── index.ts     # create<Name>Scene(): the lifecycle + wiring.
-        ├── view.ts      # buildView(): builds the container(s) to render.
-        │                # Also owns shared constants (container id/name, text).
-        ├── render.ts    # (optional) Canvas 2D → PNG bytes for image symbology.
-        └── event-handlers/
-            └── register<Thing>.ts   # One event handler per file.
+        ├── view.ts      # buildView(): assembles all the page containers.
+        ├── readouts.ts  # text-container layout (positions, sizes, initial text).
+        ├── event-handlers/          # register<Thing>(bridge): one input/subscription per file.
+        │   └── register<Thing>.ts
+        └── components/              # feature units — each exposes a public API via index.ts
+            └── <component>/
+                ├── index.ts         # barrel: re-exports the component's public API
+                ├── <logic>.ts       # driver / system / state
+                ├── types.ts         # (when it grows) shared constants + types
+                └── <sub>/           # (when it grows) e.g. render/ — one draw fn per file
 ```
+
+The `f16c-hud` scene's components today: `center-panel` (the moving central
+graphics — `types.ts`, `hudDriver.ts`, `render/`), `telemetry` (the left data
+block: weapons + movement), and `weapons` (master arm + missiles).
 
 ## Core concepts
 
@@ -55,6 +64,22 @@ interface Scene {
 
 `enter` renders the view and registers the scene's event handlers, keeping each
 handler's unsubscribe. `leave` runs them all to tear the subscriptions down.
+
+### Components (`scene/<name>/components/<component>/`)
+
+A component is a self-contained feature unit (a region of the HUD or a
+subsystem). Each one:
+
+- lives in its own directory under `components/`;
+- exposes its public API through an **`index.ts` barrel** (`export { ... }`);
+- keeps everything else internal — implementation, `types.ts` (shared constants
+  + types, added once it grows), and subfolders like `render/` (one draw
+  function per file) when the file count warrants it.
+
+**Import components through their barrel** (`./components/<name>`), never a deep
+path. Small components can be just `index.ts` + an implementation file; only
+split further when a file gets crowded. This is the target shape for every new
+component.
 
 ### Event handlers (`scene/<name>/event-handlers/register*.ts`)
 
@@ -139,7 +164,8 @@ engineered and verified on-device:
 
 - Draw white-on-black with the **Canvas 2D API**, then export PNG bytes:
   `canvas.toBlob('image/png')` → `arrayBuffer()` → `Uint8Array`. White = lit
-  green, black = off. See `scene/f16c-hud/render.ts` (`renderToPngBytes`).
+  green, black = off. See `components/center-panel/render/` (`drawHud`,
+  `renderTilePng`).
 - Pass those bytes to `bridge.updateImageRawData({ containerID, containerName,
   imageData })` as a **`Uint8Array` of ENCODED image bytes**. The host decodes,
   resizes, and converts to 4-bit greyscale itself.
@@ -157,7 +183,7 @@ Dynamic graphics (e.g. the IMU-driven flight path marker) use an async loop that
 recomputes state each tick and re-sends the image — but **only when the pixels
 actually changed**, throttled (`~8 Hz`) because images can't be sent too often.
 The scene owns the loop and stops it in `leave` (also `imuControl(false)` and
-unsubscribe). See `scene/f16c-hud/fpmDriver.ts`.
+unsubscribe). See `components/center-panel/hudDriver.ts`.
 
 - IMU: `imuControl(true, ImuReportPace.P500)` streams `sysEvent.imuData {x,y,z}`
   (accelerometer; head pitch→x, yaw→y, z≈vertical). A `register*` handler
