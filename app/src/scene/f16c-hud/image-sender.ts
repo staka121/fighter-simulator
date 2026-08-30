@@ -14,23 +14,29 @@ export type ImageSender = (
  * frames, so other tiles — and the panel itself — update irregularly or stall.
  *
  * Instead we keep only the *latest* pending frame per tile and drain them one at
- * a time, round-robin. Backlog is bounded to one frame per tile, and every tile
- * always sends its freshest pixels as soon as the channel is free.
+ * a time. Backlog is bounded to one frame per tile, and every tile always sends
+ * its freshest pixels as soon as the channel is free.
+ *
+ * `priorityId` (the moving panel) is drained first whenever it has a pending
+ * frame, so its cadence stays regular instead of being pushed around by the
+ * slower heading/minimap tiles; those fill the gaps between panel frames. The
+ * Map preserves insertion order, giving FIFO fairness among the rest.
  */
-export function createImageSender(bridge: EvenAppBridge): ImageSender {
+export function createImageSender(bridge: EvenAppBridge, priorityId?: number): ImageSender {
   const latest = new Map<number, { name: string; data: Uint8Array }>()
-  const queue: number[] = [] // tile ids awaiting a send, in arrival order
   let draining = false
 
   async function drain() {
     if (draining) return
     draining = true
     try {
-      while (queue.length > 0) {
-        const id = queue.shift()!
-        const frame = latest.get(id)
-        latest.delete(id) // a newer frame arriving during the send re-queues the id
-        if (!frame) continue
+      while (latest.size > 0) {
+        const id =
+          priorityId != null && latest.has(priorityId)
+            ? priorityId
+            : (latest.keys().next().value as number)
+        const frame = latest.get(id)!
+        latest.delete(id) // a newer frame arriving during the send re-adds the id
         try {
           await bridge.updateImageRawData(
             new ImageRawDataUpdate({
@@ -49,7 +55,6 @@ export function createImageSender(bridge: EvenAppBridge): ImageSender {
   }
 
   return (containerID, containerName, imageData) => {
-    if (!latest.has(containerID)) queue.push(containerID)
     latest.set(containerID, { name: containerName, data: imageData })
     void drain()
     return Promise.resolve()

@@ -5,7 +5,9 @@ import type { ImageSender } from '../../image-sender'
 import type { Store } from '../../store'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-const FRAME_MS = 150 // ~7 Hz; eases the heading-up rotation
+// ~5 Hz; eases the heading-up rotation. Kept below the panel's rate so it doesn't
+// crowd the shared send channel (the panel is prioritised there).
+const FRAME_MS = 200
 
 /** Drive the minimap: ease the displayed heading toward the GPS course for
  * smooth heading-up rotation, and re-render only when the view actually changes

@@ -1,7 +1,7 @@
 import { ImuReportPace, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import type { Scene } from '../types'
 import { buildView } from './view'
-import { startHudDriver } from './components/center-panel'
+import { startHudDriver, TILES } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
 import { startAltitudeDriver } from './components/altitude'
 import { startHeadingTapeDriver } from './components/heading'
@@ -39,8 +39,9 @@ export function createF16cHudScene(store: Store): Scene {
       if (created !== 0) console.error('HUD page create failed:', created)
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
-      // All raw-image sends (panel + heading tape) go through one serial channel.
-      const send = createImageSender(bridge)
+      // All raw-image sends go through one serial channel; the moving panel is
+      // prioritised so its cadence stays regular.
+      const send = createImageSender(bridge, TILES[0].id)
       const leftData = startLeftDataDriver(bridge, store)
       const missiles = createMissileSystem(store, leftData.refresh)
       await bridge.imuControl(true, ImuReportPace.P500)

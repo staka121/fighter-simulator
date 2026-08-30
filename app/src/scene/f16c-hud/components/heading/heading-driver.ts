@@ -6,10 +6,11 @@ import type { Store } from '../../store'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-// ~10 Hz. The displayed heading eases toward the (≈1 Hz, discrete) GPS course
-// so the scale scrolls smoothly. We only re-render when the scale actually moved
-// by ≥1 px, so a straight walk or a standstill sends nothing.
-const FRAME_MS = 100
+// ~5 Hz. The displayed heading eases toward the (≈1 Hz, discrete) GPS course so
+// the scale scrolls smoothly. Kept below the panel's rate so it doesn't crowd
+// the shared send channel; we only re-render when the scale moved by ≥1 px, so a
+// straight walk or a standstill sends nothing.
+const FRAME_MS = 200
 
 export function startHeadingTapeDriver(send: ImageSender, store: Store): () => void {
   let running = true
