@@ -6,12 +6,12 @@ import { TextContainerProperty } from '@evenrealities/even_hub_sdk'
 // + movement) is one container rendered from telemetry, so all its lines share
 // the same spacing.
 //
-// Budget: max 8 text containers per page. Event layer (1) + these (5) = 6.
+// Budget: max 8 text containers per page. Event layer (1) + speed + heading
+// components (2) + these (3) = 6.
 export const READOUTS = {
   altitude: { id: 4, name: 'altitude' },
   leftData: { id: 5, name: 'leftData' },
   rightData: { id: 6, name: 'rightData' },
-  heading: { id: 7, name: 'heading' },
 } as const
 
 interface TextSpec {
@@ -83,16 +83,6 @@ export function buildReadoutContainers(): TextContainerProperty[] {
       w: 74,
       h: 100,
       content: 'R 4030\nAL 500\nB030.9\n003:38\n030>001',
-    }),
-    // Heading tape + bank, below the panel.
-    container({
-      id: r.heading.id,
-      name: r.heading.name,
-      x: 180,
-      y: 222,
-      w: 216,
-      h: 40,
-      content: '     ▲\n 12   [139]   15',
     }),
   ]
 }

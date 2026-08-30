@@ -11,6 +11,7 @@ export const AMMO_START = 6
 export interface Telemetry {
   // movement
   speedKmh: number | null // latest GPS speed
+  heading: number | null // GPS course, deg from true north (null when standing)
   speedOk: boolean // location updates running
   avgSum: number // Σ moving-speed samples
   avgCount: number // count of moving-speed samples
@@ -23,6 +24,7 @@ export interface Telemetry {
 export function createTelemetry(): Telemetry {
   return {
     speedKmh: null,
+    heading: null,
     speedOk: true,
     avgSum: 0,
     avgCount: 0,

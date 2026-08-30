@@ -4,6 +4,7 @@ import { buildView } from './view'
 import { READOUTS } from './readouts'
 import { startHudDriver } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
+import { startHeadingDriver } from './components/heading'
 import { createTelemetry, startLeftDataDriver } from './components/telemetry'
 import { createMissileSystem, MENU_ITEMS } from './components/weapons'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
@@ -52,6 +53,7 @@ export function createF16cHudScene(): Scene {
         registerLocation(bridge, telemetry),
         startHudDriver(bridge, imu),
         startSpeedDriver(bridge, telemetry),
+        startHeadingDriver(bridge, telemetry),
         leftData.stop,
         () => void bridge.imuControl(false),
       ]
