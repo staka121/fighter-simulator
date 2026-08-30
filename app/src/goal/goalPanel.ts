@@ -54,7 +54,7 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
   injectStyleOnce()
   root.innerHTML = `
     <div class="gp">
-      <h1 class="gp-title">F-16C HUD</h1>
+      <h1 class="gp-title">Fighter HUD</h1>
       <p class="gp-sub">Running — check the glasses.</p>
       <div class="gp-card">
         <div class="gp-row"><span>Now</span><b id="gp-now">acquiring…</b></div>
