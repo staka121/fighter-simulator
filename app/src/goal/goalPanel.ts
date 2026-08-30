@@ -19,6 +19,8 @@ const CSS = `
 .gp-empty { font-size: 12px; opacity: 0.5; padding: 6px 2px; }
 .gp-item { display: flex; align-items: center; gap: 8px; background: #232323; border: 1px solid #3a3a3a; border-radius: 8px; padding: 8px 10px; }
 .gp-item.active { border-color: #e5e5e5; }
+.gp-item.reached { opacity: 0.55; }
+.gp-item.reached .gp-n, .gp-item.reached .gp-c { text-decoration: line-through; }
 .gp-pick { flex: 1; display: flex; align-items: center; gap: 8px; text-align: left; background: none; border: 0; color: #e5e5e5; font-size: 13px; padding: 0; }
 .gp-mark { width: 12px; opacity: 0.9; }
 .gp-n { opacity: 0.6; font-variant-numeric: tabular-nums; }
@@ -109,11 +111,12 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
     listEl.innerHTML = store.goals
       .map((g, i) => {
         const active = i === store.activeGoalIndex
+        const cls = `gp-item${active ? ' active' : ''}${g.reached ? ' reached' : ''}`
         const coord = formatCoord(g.lat, g.lon) + (g.alt != null ? ` (${Math.round(g.alt)}m)` : '')
         return `
-          <div class="gp-item${active ? ' active' : ''}">
+          <div class="${cls}">
             <button class="gp-pick" data-pick="${i}">
-              <span class="gp-mark">${active ? '▸' : ''}</span>
+              <span class="gp-mark">${active ? '▸' : g.reached ? '✓' : ''}</span>
               <span class="gp-n">${i + 1}</span>
               <span class="gp-c">${coord}</span>
             </button>
@@ -123,9 +126,25 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
       .join('')
   }
 
+  // Signature of the goal-progress state the glasses drivers mutate (active goal
+  // and reached flags), so we re-render + persist when they auto-advance.
+  const progressSig = () =>
+    `${store.activeGoalIndex}|${store.goals.map(g => (g.reached ? '1' : '0')).join('')}`
+  let lastSig = ''
+
   renderNow()
   renderList()
-  setInterval(renderNow, 1000)
+  lastSig = progressSig()
+
+  setInterval(() => {
+    renderNow()
+    if (progressSig() !== lastSig) {
+      renderList()
+      goalMap.refreshGoals()
+      saveGoals(store)
+      lastSig = progressSig()
+    }
+  }, 1000)
 
   // Select (make active) or delete via event delegation — rows are rebuilt.
   listEl.addEventListener('click', event => {
@@ -143,6 +162,7 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
     saveGoals(store)
     renderList()
     goalMap.refreshGoals()
+    lastSig = progressSig()
   })
 
   pick<HTMLButtonElement>('gp-add').addEventListener('click', async () => {
@@ -167,5 +187,6 @@ export function mountGoalPanel(root: HTMLElement, store: Store): void {
     altInput.value = ''
     renderList()
     goalMap.refreshGoals()
+    lastSig = progressSig()
   })
 }

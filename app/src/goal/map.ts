@@ -62,8 +62,13 @@ export function mountGoalMap(
     goalLayer.clearLayers()
     store.goals.forEach((g, i) => {
       const active = i === store.activeGoalIndex
-      const color = active ? '#e5e5e5' : '#9a9a9a'
-      L.circleMarker([g.lat, g.lon], { radius: 7, color, fillColor: color, fillOpacity: 0.9 })
+      const color = active ? '#e5e5e5' : g.reached ? '#5a5a5a' : '#9a9a9a'
+      L.circleMarker([g.lat, g.lon], {
+        radius: 7,
+        color,
+        fillColor: color,
+        fillOpacity: g.reached ? 0.5 : 0.9,
+      })
         .bindTooltip(String(i + 1), { permanent: true, direction: 'top', offset: [0, -6] })
         .addTo(goalLayer)
     })

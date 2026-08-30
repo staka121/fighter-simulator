@@ -5,11 +5,13 @@
 // not a reach into any one component.
 export const AMMO_START = 6
 
-/** A geographic point (WGS84 degrees), with an optional elevation in metres. */
+/** A geographic point (WGS84 degrees), with an optional elevation in metres.
+ * `reached` is set once the wearer arrives (nav progress). */
 export interface GoalPoint {
   lat: number
   lon: number
   alt?: number
+  reached?: boolean
 }
 
 export interface Store {
