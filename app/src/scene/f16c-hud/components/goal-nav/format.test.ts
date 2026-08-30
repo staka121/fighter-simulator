@@ -3,7 +3,7 @@ import { formatGoalNav } from './format'
 import { createStore, type Store } from '../../store'
 
 /** A store at the origin with a single active goal at `g`. */
-function atOriginWithGoal(g: { lat: number; lon: number; alt?: number }): Store {
+function atOriginWithGoal(g: { lat: number; lon: number; alt?: number; reached?: boolean }): Store {
   const t = createStore()
   t.lat = 0
   t.lon = 0
@@ -31,17 +31,17 @@ describe('formatGoalNav', () => {
     expect(lines[4]).toBe('SP 00>01') // start (00) → first goal (01)
   })
 
-  it('clears the block on reaching the final destination', () => {
-    // Standing on the only (final) goal → navigation complete.
-    expect(formatGoalNav(atOriginWithGoal({ lat: 0, lon: 0 }))).toBe(
-      'R --\nAL --\nB --\nT --:--\nSP --',
-    )
+  it('clears the block once the active goal is reached (and stays cleared away from it)', () => {
+    const t = atOriginWithGoal({ lat: 0, lon: 1, reached: true })
+    t.lat = 0.5 // well away from the goal — nav must not resume
+    t.lon = 0.5
+    expect(formatGoalNav(t)).toBe('R --\nAL --\nB --\nT --:--\nSP --')
   })
 
-  it('keeps navigating after reaching an intermediate goal (not final)', () => {
-    const t = atOriginWithGoal({ lat: 0, lon: 0 }) // standing on goal 01
-    t.goals.push({ lat: 0, lon: 1 }) // a further goal 02 exists → 01 is not final
-    expect(formatGoalNav(t).split('\n')[4]).toBe('SP 00>01') // still shows nav
+  it('still navigates to an unreached goal even when standing on it', () => {
+    // reached is set by the nav driver, not by distance; the readout keys off it.
+    const t = atOriginWithGoal({ lat: 0, lon: 0 })
+    expect(formatGoalNav(t).split('\n')[4]).toBe('SP 00>01')
   })
 
   it('keeps `from` at the last reached steerpoint, not the previous index', () => {

@@ -1,6 +1,5 @@
 import { activeGoal, type Store } from '../../store'
 import { distanceMeters, initialBearing } from '../../geo'
-import { ARRIVE_RADIUS_M } from './progress'
 
 const PLACEHOLDER = 'R --\nAL --\nB --\nT --:--\nSP --'
 
@@ -28,16 +27,12 @@ function fmtTtg(m: number, mps: number): string {
  */
 export function formatGoalNav(store: Store): string {
   const g = activeGoal(store)
-  if (!g || store.lat == null || store.lon == null) return PLACEHOLDER
+  // No goal / no fix → clear. A reached goal is no longer a destination, so the
+  // block stays cleared even after leaving it (nav does not resume).
+  if (!g || g.reached || store.lat == null || store.lon == null) return PLACEHOLDER
 
   const here = { lat: store.lat, lon: store.lon }
   const m = distanceMeters(here, g)
-
-  // Reached the final destination (active goal is the last one, within arrival
-  // range) → navigation is done, so clear the block.
-  const isFinalGoal = store.activeGoalIndex === store.goals.length - 1
-  if (isFinalGoal && m <= ARRIVE_RADIUS_M) return PLACEHOLDER
-
   const alt = g.alt != null ? `AL ${Math.round(g.alt)}` : 'AL --'
   const bearing = `B ${pad3(Math.round(initialBearing(here, g)) % 360)}`
   // ETA speed: prefer the moving average, fall back to the latest reading.
