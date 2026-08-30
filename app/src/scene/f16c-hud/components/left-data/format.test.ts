@@ -3,8 +3,15 @@ import { formatLeftData } from './format'
 import { createStore } from '../../store'
 
 describe('formatLeftData', () => {
-  it('shows armed full load, zero average and STOP when idle', () => {
-    expect(formatLeftData(createStore())).toBe('ARM 6\nAVG 0.0\nINT 0\nSTOP')
+  it('shows armed full load, zero average, STOP and no position when idle', () => {
+    expect(formatLeftData(createStore())).toBe('ARM 6\nAVG 0.0\nINT 0\nSTOP\n--')
+  })
+
+  it('appends the current position (coarse) once there is a fix', () => {
+    const t = createStore()
+    t.lat = 35.681
+    t.lon = 139.767
+    expect(formatLeftData(t).split('\n')[4]).toBe('35.7,139.8')
   })
 
   it('averages moving speed and classifies walking', () => {

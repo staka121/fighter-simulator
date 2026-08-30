@@ -22,13 +22,15 @@ export function buildLeftDataContainer(): TextContainerProperty {
     xPosition: 8,
     yPosition: 133,
     width: 134,
-    height: 124,
+    // Five lines (weapons/avg/intensity/class/position) at the OS line height
+    // (~31 px); y133 + 154 = 287 stays within the 288-tall canvas.
+    height: 154,
     borderWidth: 0,
     borderColor: 5,
     paddingLength: 2,
     containerID: LEFT_DATA.id,
     containerName: LEFT_DATA.name,
-    content: 'ARM 6\nAVG 0.0\nINT 0\nSTOP',
+    content: 'ARM 6\nAVG 0.0\nINT 0\nSTOP\n--',
     isEventCapture: 0,
   })
 }
