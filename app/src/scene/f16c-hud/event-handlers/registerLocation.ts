@@ -3,7 +3,7 @@ import {
   AppLocationAccuracy,
   type EvenAppBridge,
 } from '@evenrealities/even_hub_sdk'
-import type { Telemetry } from '../components/telemetry/telemetry'
+import type { Telemetry } from '../components/telemetry'
 
 /**
  * Start Even Hub native location updates. Writes speed into `telemetry` (for the

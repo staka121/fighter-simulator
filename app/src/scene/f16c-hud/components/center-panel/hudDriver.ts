@@ -1,5 +1,6 @@
 import { ImageRawDataUpdate, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
-import { renderTilePng, TILES, PITCH_PX_PER_DEG, type HudState } from './render'
+import { renderTilePng } from './render/renderTilePng'
+import { TILES, PITCH_PX_PER_DEG, type HudState } from './types'
 import type { ImuSample } from '../../event-handlers/registerImuSampler'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

@@ -1,5 +1,5 @@
 import { OsEventTypeList, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
-import type { Telemetry } from '../components/telemetry/telemetry'
+import type { Telemetry } from '../components/telemetry'
 
 /**
  * Estimate exercise intensity from the IMU (no heart-rate API exists, so
