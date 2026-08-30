@@ -1,13 +1,15 @@
 /**
- * Heading tape image tile — a dedicated 288-wide image just below the panel
- * (panel bottom is y216). It is its own tile, not part of the panel, so it can
- * render a real scrolling compass scale; its sends are serialised with the
- * panel through the shared image sender. Image width must stay ≤ 288.
+ * Heading readout, bottom-centre. The vertical tick marks are a *static* image
+ * tile (drawn once, re-sent on a slow heartbeat), and the current heading is a
+ * text box overlaid at the centre. So the live value updates off the image send
+ * channel and never competes with the moving panel — only the panel and minimap
+ * animate on that channel now. Image width must stay ≤ 288.
  */
-export const HEADING_TILE = { id: 7, name: 'heading', x: 144, y: 218, w: 288, h: 54 } as const
+export const HEADING_TILE = { id: 7, name: 'heading', x: 144, y: 222, w: 288, h: 32 } as const
 
-export const PX_PER_DEG = 9 // scale zoom → ±15° fills the tile width (≈±135 px)
-export const TICK_STEP_DEG = 5 // minor tick spacing
-export const MAJOR_STEP_DEG = 10 // labelled (major) tick spacing
-export const SPAN_DEG = 15 // show 15° either side of the current heading
-export const SCROLL_SMOOTH = 0.2 // low-pass toward the GPS heading (smooth scroll)
+/** The centred current-heading number box (text). */
+export const HEADING_NUM = { id: 10, name: 'headingNum', x: 262, y: 222, w: 52, h: 32 } as const
+
+export const TICK_MINOR = 16 // px between ticks
+export const TICK_MAJOR_EVERY = 48 // every third tick is longer
+export const TICK_CLEAR = 34 // half-width of the clear centre zone (for the box)

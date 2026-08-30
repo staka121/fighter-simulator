@@ -4,7 +4,7 @@ import { buildView } from './view'
 import { startHudDriver, TILES } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
 import { startAltitudeDriver } from './components/altitude'
-import { startHeadingTapeDriver } from './components/heading'
+import { startHeadingTicks, startHeadingNumberDriver } from './components/heading'
 import { startMinimapDriver } from './components/minimap'
 import { startClockDriver } from './components/clock'
 import { startLeftDataDriver } from './components/left-data'
@@ -60,7 +60,8 @@ export function createF16cHudScene(store: Store): Scene {
         startSpeedDriver(bridge, store),
         startAltitudeDriver(bridge, store),
         startGoalNavDriver(bridge, store),
-        startHeadingTapeDriver(send, store),
+        startHeadingTicks(send),
+        startHeadingNumberDriver(bridge, store),
         startMinimapDriver(send, store),
         startClockDriver(bridge),
         leftData.stop,

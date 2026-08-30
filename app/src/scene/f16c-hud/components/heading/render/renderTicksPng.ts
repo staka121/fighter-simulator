@@ -1,9 +1,8 @@
 import { HEADING_TILE } from '../types'
-import { drawHeadingTape } from './drawHeadingTape'
+import { drawHeadingTicks } from './drawHeadingTicks'
 
-/** Render the heading tape to PNG bytes (white-on-black); the host converts to
- * 4-bit greyscale. `heading` is null before the first GPS course fix. */
-export async function renderTapePng(heading: number | null): Promise<Uint8Array> {
+/** Render the static heading tick scale to PNG bytes (white-on-black). */
+export async function renderTicksPng(): Promise<Uint8Array> {
   const canvas = document.createElement('canvas')
   canvas.width = HEADING_TILE.w
   canvas.height = HEADING_TILE.h
@@ -13,7 +12,7 @@ export async function renderTapePng(heading: number | null): Promise<Uint8Array>
 
   ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, HEADING_TILE.w, HEADING_TILE.h)
-  drawHeadingTape(ctx, HEADING_TILE.w, heading)
+  drawHeadingTicks(ctx, HEADING_TILE.w, HEADING_TILE.h)
 
   const blob: Blob = await new Promise((resolve, reject) => {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')

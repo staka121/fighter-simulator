@@ -6,7 +6,7 @@ import {
 import { CANVAS, TILES } from './components/center-panel'
 import { buildSpeedContainer } from './components/speed'
 import { buildAltitudeContainer } from './components/altitude'
-import { buildHeadingImageContainer } from './components/heading'
+import { buildHeadingImageContainer, buildHeadingNumberContainer } from './components/heading'
 import { buildMinimapImageContainer } from './components/minimap'
 import { buildLeftDataContainer } from './components/left-data'
 import { buildGoalNavContainer } from './components/goal-nav'
@@ -49,6 +49,7 @@ export function buildView(): CreateStartUpPageContainer {
     buildClockContainer(),
     buildSpeedContainer(),
     buildAltitudeContainer(),
+    buildHeadingNumberContainer(),
     buildLeftDataContainer(),
     buildGoalNavContainer(),
   ]
