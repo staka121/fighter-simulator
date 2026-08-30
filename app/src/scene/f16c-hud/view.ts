@@ -10,6 +10,7 @@ import { buildHeadingImageContainer } from './components/heading'
 import { buildMinimapImageContainer } from './components/minimap'
 import { buildLeftDataContainer } from './components/left-data'
 import { buildGoalNavContainer } from './components/goal-nav'
+import { buildClockContainer } from './components/clock'
 import { buildMenu } from './components/weapons'
 
 /** Image containers can't capture input, so a full-canvas transparent text
@@ -45,6 +46,7 @@ export function buildView(): CreateStartUpPageContainer {
   })
 
   const readouts = [
+    buildClockContainer(),
     buildSpeedContainer(),
     buildAltitudeContainer(),
     buildLeftDataContainer(),

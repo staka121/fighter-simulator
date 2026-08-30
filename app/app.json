@@ -2,10 +2,15 @@
   "package_id": "com.staka121.fightersimulator",
   "edition": "202601",
   "name": "F-16C HUD",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "min_app_version": "2.0.0",
-  "min_sdk_version": "0.0.10",
+  "min_sdk_version": "0.0.14",
   "entrypoint": "index.html",
-  "permissions": [{ "name": "location", "desc": "Shows your walking speed on the HUD." }],
+  "permissions": [
+    {
+      "name": "location",
+      "desc": "Drives speed, heading, altitude and goal navigation on the HUD."
+    }
+  ],
   "supported_languages": ["en"]
 }
