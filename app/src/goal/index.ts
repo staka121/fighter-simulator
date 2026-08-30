@@ -1,4 +1,5 @@
-// Phone-side goal (destination) UI + persistence. The glasses read `store.goal`.
+// Phone-side goal (destination) UI + persistence. The glasses navigate to the
+// active goal (see activeGoal in the store).
 export { parseGoalInput, formatCoord } from './coords'
-export { loadGoal, saveGoal } from './goalStorage'
+export { loadGoals, saveGoals } from './goalStorage'
 export { mountGoalPanel } from './goalPanel'

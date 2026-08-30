@@ -1,4 +1,4 @@
-import type { Store } from '../../store'
+import { activeGoal, type Store } from '../../store'
 import { distanceMeters, initialBearing } from './geo'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
@@ -23,7 +23,7 @@ function fmtTtg(m: number, mps: number): string {
  * time-to-go, and steerpoint number. All `--` until a goal and a GPS fix exist.
  */
 export function formatGoalNav(store: Store): string {
-  const g = store.goal
+  const g = activeGoal(store)
   if (!g || store.lat == null || store.lon == null) {
     return 'R --\nAL --\nB --\nT --:--\nSP --'
   }
@@ -35,7 +35,11 @@ export function formatGoalNav(store: Store): string {
   // ETA speed: prefer the moving average, fall back to the latest reading.
   const kmh = store.avgCount > 0 ? store.avgSum / store.avgCount : (store.speedKmh ?? 0)
   const ttg = fmtTtg(m, kmh / 3.6)
-  const sp = 'SP 001' // single goal for now; the index when multiple goals land
+  // Steerpoint from>to: the nav start is 00 and goals are 01, 02, … in order.
+  // `from` is the last steerpoint reached (see updateNavProgress); `to` is the
+  // active goal's number. e.g. "00>01". (Sequential for now; may become
+  // user-assigned later.)
+  const sp = `SP ${pad2(store.fromSteerpoint)}>${pad2(store.activeGoalIndex + 1)}`
 
   return `${fmtRange(m)}\n${alt}\n${bearing}\n${ttg}\n${sp}`
 }

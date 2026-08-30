@@ -23,8 +23,13 @@ export interface Store {
   avgSum: number // Σ moving-speed samples
   avgCount: number // count of moving-speed samples
   energy: number // EWMA of |accel| deviation from 1 g
-  // navigation
-  goal: GoalPoint | null // destination set from the phone UI (persisted)
+  // navigation — destinations set from the phone UI (persisted). The glasses
+  // navigate to the active one; `activeGoalIndex` is -1 when there is none.
+  goals: GoalPoint[]
+  activeGoalIndex: number
+  // The steerpoint most recently reached (0 = the nav start). Advances only on
+  // arrival, so switching the active goal mid-leg doesn't fake a "from".
+  fromSteerpoint: number
   // weapons
   armed: boolean
   ammo: number
@@ -41,8 +46,15 @@ export function createStore(): Store {
     avgSum: 0,
     avgCount: 0,
     energy: 0,
-    goal: null,
+    goals: [],
+    activeGoalIndex: -1,
+    fromSteerpoint: 0,
     armed: true,
     ammo: AMMO_START,
   }
+}
+
+/** The goal the glasses navigate to, or null when none is selected. */
+export function activeGoal(store: Store): GoalPoint | null {
+  return store.goals[store.activeGoalIndex] ?? null
 }

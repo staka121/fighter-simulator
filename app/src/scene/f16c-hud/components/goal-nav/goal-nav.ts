@@ -4,6 +4,7 @@ import {
   type EvenAppBridge,
 } from '@evenrealities/even_hub_sdk'
 import { formatGoalNav } from './format'
+import { updateNavProgress } from './progress'
 import type { Store } from '../../store'
 
 export { formatGoalNav }
@@ -44,6 +45,7 @@ export function startGoalNavDriver(bridge: EvenAppBridge, store: Store): () => v
 
   async function loop() {
     while (running) {
+      updateNavProgress(store)
       const content = formatGoalNav(store)
       if (content !== shown) {
         shown = content
