@@ -1,28 +1,28 @@
-import { TICK_MINOR, TICK_MAJOR_EVERY, TICK_CLEAR } from '../types'
+import { TICK_MINOR, TICK_MAJOR_EVERY } from '../types'
 
 const WHITE = '#ffffff'
 
 /**
- * Draw the static decorative tick scale that flanks the heading box. Purely
- * atmospheric — it never moves, so it is rendered once. Symmetric about the
- * centre, with a clear zone in the middle for the number box; every third tick
- * is longer.
+ * Draw one static tick strip. Ticks are spaced from the edge nearest the number
+ * box (`anchor`) outward, so the left and right strips mirror around the box.
+ * Every third tick is longer. Purely decorative — rendered once.
  */
-export function drawHeadingTicks(ctx: CanvasRenderingContext2D, w: number, h: number): void {
-  const cx = w / 2
+export function drawHeadingTicks(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  anchor: 'left' | 'right',
+): void {
   const midY = h / 2
-  const maxOffset = w / 2 - 8
-
   ctx.strokeStyle = WHITE
   ctx.lineWidth = 1.5
-  for (let o = 0; o <= maxOffset; o += TICK_MINOR) {
-    if (o < TICK_CLEAR) continue
-    const half = o % TICK_MAJOR_EVERY === 0 ? 8 : 5
-    for (const x of [cx - o, cx + o]) {
-      ctx.beginPath()
-      ctx.moveTo(x, midY - half)
-      ctx.lineTo(x, midY + half)
-      ctx.stroke()
-    }
+  for (let k = 1; k * TICK_MINOR <= w - 3; k++) {
+    const d = k * TICK_MINOR
+    const x = anchor === 'left' ? d : w - d
+    const half = k % TICK_MAJOR_EVERY === 0 ? 8 : 5
+    ctx.beginPath()
+    ctx.moveTo(x, midY - half)
+    ctx.lineTo(x, midY + half)
+    ctx.stroke()
   }
 }

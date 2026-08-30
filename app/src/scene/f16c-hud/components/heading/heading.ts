@@ -4,7 +4,7 @@ import {
   ImageContainerProperty,
   type EvenAppBridge,
 } from '@evenrealities/even_hub_sdk'
-import { HEADING_TILE, HEADING_NUM } from './types'
+import { HEADING_TICKS, HEADING_NUM } from './types'
 import { formatHeadingNumber } from './format'
 import { renderTicksPng } from './render/renderTicksPng'
 import type { ImageSender } from '../../image-sender'
@@ -14,19 +14,22 @@ export { formatHeadingNumber }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-/** Static tick-scale image tile (the moving value is a separate text box). */
-export function buildHeadingImageContainer(): ImageContainerProperty {
-  return new ImageContainerProperty({
-    xPosition: HEADING_TILE.x,
-    yPosition: HEADING_TILE.y,
-    width: HEADING_TILE.w,
-    height: HEADING_TILE.h,
-    containerID: HEADING_TILE.id,
-    containerName: HEADING_TILE.name,
-  })
+/** The two static tick-strip image tiles flanking the number box. */
+export function buildHeadingTickContainers(): ImageContainerProperty[] {
+  return HEADING_TICKS.map(
+    t =>
+      new ImageContainerProperty({
+        xPosition: t.x,
+        yPosition: t.y,
+        width: t.w,
+        height: t.h,
+        containerID: t.id,
+        containerName: t.name,
+      }),
+  )
 }
 
-/** Current-heading number box, centred over the ticks. */
+/** Current-heading number box, centred in the gap between the tick strips. */
 export function buildHeadingNumberContainer(): TextContainerProperty {
   return new TextContainerProperty({
     xPosition: HEADING_NUM.x,
@@ -44,21 +47,27 @@ export function buildHeadingNumberContainer(): TextContainerProperty {
 }
 
 /**
- * Push the static ticks image, then re-send it on a slow heartbeat so it
- * survives an image reset (e.g. after the app is backgrounded). It never
- * changes, so rendering happens once. Returns a stop fn.
+ * Push the static tick strips, then re-send them on a slow heartbeat so they
+ * survive an image reset (e.g. after the app is backgrounded). They never
+ * change, so each is rendered once. Returns a stop fn.
  */
 export function startHeadingTicks(send: ImageSender): () => void {
   let running = true
-  let bytes: Uint8Array | null = null
+  const cache = new Map<number, Uint8Array>()
 
   async function loop() {
     while (running) {
-      try {
-        if (!bytes) bytes = await renderTicksPng()
-        await send(HEADING_TILE.id, HEADING_TILE.name, bytes)
-      } catch (e) {
-        console.error('heading ticks render failed:', e)
+      for (const t of HEADING_TICKS) {
+        try {
+          let bytes = cache.get(t.id)
+          if (!bytes) {
+            bytes = await renderTicksPng(t.w, t.h, t.anchor)
+            cache.set(t.id, bytes)
+          }
+          await send(t.id, t.name, bytes)
+        } catch (e) {
+          console.error('heading ticks render failed:', e)
+        }
       }
       await sleep(4000)
     }

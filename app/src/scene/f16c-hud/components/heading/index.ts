@@ -1,8 +1,8 @@
-// Public API of the heading component: a static tick-scale image tile plus a
-// centred text box for the live heading (kept off the image send channel).
-export { HEADING_TILE, HEADING_NUM } from './types'
+// Public API of the heading component: two static tick-strip image tiles that
+// flank a centred text box for the live heading (kept off the image channel).
+export { HEADING_TICKS, HEADING_NUM } from './types'
 export {
-  buildHeadingImageContainer,
+  buildHeadingTickContainers,
   buildHeadingNumberContainer,
   startHeadingTicks,
   startHeadingNumberDriver,

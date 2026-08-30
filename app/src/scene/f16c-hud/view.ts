@@ -6,7 +6,7 @@ import {
 import { CANVAS, TILES } from './components/center-panel'
 import { buildSpeedContainer } from './components/speed'
 import { buildAltitudeContainer } from './components/altitude'
-import { buildHeadingImageContainer, buildHeadingNumberContainer } from './components/heading'
+import { buildHeadingTickContainers, buildHeadingNumberContainer } from './components/heading'
 import { buildMinimapImageContainer } from './components/minimap'
 import { buildLeftDataContainer } from './components/left-data'
 import { buildGoalNavContainer } from './components/goal-nav'
@@ -54,8 +54,8 @@ export function buildView(): CreateStartUpPageContainer {
     buildGoalNavContainer(),
   ]
 
-  // The heading tape and minimap are their own image tiles (see components/).
-  const imageObject = [...images, buildHeadingImageContainer(), buildMinimapImageContainer()]
+  // The heading tick strips and minimap are their own image tiles (see components/).
+  const imageObject = [...images, ...buildHeadingTickContainers(), buildMinimapImageContainer()]
 
   return new CreateStartUpPageContainer({
     containerTotalNum: imageObject.length + 1 + readouts.length,
