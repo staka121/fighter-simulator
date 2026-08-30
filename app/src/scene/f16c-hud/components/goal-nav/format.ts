@@ -1,5 +1,5 @@
 import { activeGoal, type Store } from '../../store'
-import { distanceMeters, initialBearing } from './geo'
+import { distanceMeters, initialBearing } from '../../geo'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 const pad3 = (n: number) => String(n).padStart(3, '0')

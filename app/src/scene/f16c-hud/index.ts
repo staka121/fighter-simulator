@@ -5,6 +5,7 @@ import { startHudDriver } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
 import { startAltitudeDriver } from './components/altitude'
 import { startHeadingTapeDriver } from './components/heading'
+import { startMinimapDriver } from './components/minimap'
 import { startLeftDataDriver } from './components/left-data'
 import { startGoalNavDriver } from './components/goal-nav'
 import type { Store } from './store'
@@ -58,6 +59,7 @@ export function createF16cHudScene(store: Store): Scene {
         startAltitudeDriver(bridge, store),
         startGoalNavDriver(bridge, store),
         startHeadingTapeDriver(send, store),
+        startMinimapDriver(send, store),
         leftData.stop,
         () => void bridge.imuControl(false),
       ]

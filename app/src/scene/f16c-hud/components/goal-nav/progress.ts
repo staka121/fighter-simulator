@@ -1,5 +1,5 @@
 import { activeGoal, type Store } from '../../store'
-import { distanceMeters } from './geo'
+import { distanceMeters } from '../../geo'
 
 /** How close (m) counts as reaching a steerpoint. */
 export const ARRIVE_RADIUS_M = 15
