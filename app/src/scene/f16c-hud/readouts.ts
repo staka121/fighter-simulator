@@ -8,7 +8,6 @@ import { TextContainerProperty } from '@evenrealities/even_hub_sdk'
 //
 // Budget: max 8 text containers per page. Event layer (1) + these (5) = 6.
 export const READOUTS = {
-  airspeed: { id: 3, name: 'airspeed' },
   altitude: { id: 4, name: 'altitude' },
   leftData: { id: 5, name: 'leftData' },
   rightData: { id: 6, name: 'rightData' },
@@ -50,19 +49,6 @@ function container(s: TextSpec): TextContainerProperty {
 export function buildReadoutContainers(): TextContainerProperty[] {
   const r = READOUTS
   return [
-    // Airspeed box, a few px left of the panel edge (144). No text-align field
-    // exists, so the box is sized snug to the digits to fake centering.
-    container({
-      id: r.airspeed.id,
-      name: r.airspeed.name,
-      x: 88,
-      y: 125,
-      w: 52,
-      h: 32,
-      content: '0',
-      boxed: true,
-      pad: 1,
-    }),
     // Altitude box, a few px right of the panel edge (432). Same snug baseline
     // as the airspeed box, widened for 4 digits.
     container({

@@ -4,6 +4,7 @@ import {
   CreateStartUpPageContainer,
 } from '@evenrealities/even_hub_sdk'
 import { CANVAS, TILES } from './components/center-panel'
+import { buildSpeedContainer } from './components/speed'
 import { buildReadoutContainers } from './readouts'
 import { buildMenu } from './components/weapons'
 
@@ -39,7 +40,7 @@ export function buildView(): CreateStartUpPageContainer {
     isEventCapture: 1,
   })
 
-  const readouts = buildReadoutContainers()
+  const readouts = [buildSpeedContainer(), ...buildReadoutContainers()]
 
   return new CreateStartUpPageContainer({
     containerTotalNum: TILES.length + 1 + readouts.length,
