@@ -3,9 +3,9 @@ import {
   ImageContainerProperty,
   CreateStartUpPageContainer,
 } from '@evenrealities/even_hub_sdk'
-import { CANVAS, TILES } from './render'
+import { CANVAS, TILES } from './components/graphics/render'
 import { buildReadoutContainers } from './readouts'
-import { buildMenu } from './menu'
+import { buildMenu } from './components/weapons/menu'
 
 /** Image containers can't capture input, so a full-canvas transparent text
  * container sits behind them to receive taps. */

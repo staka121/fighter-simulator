@@ -1,4 +1,4 @@
-import { AMMO_START, type Telemetry } from './telemetry'
+import { AMMO_START, type Telemetry } from '../telemetry/telemetry'
 import { playLaunchSound, playEmptySound } from './sound'
 
 /**

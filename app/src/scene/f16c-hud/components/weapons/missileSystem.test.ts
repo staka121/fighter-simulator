@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createMissileSystem } from './missileSystem'
-import { createTelemetry, AMMO_START } from './telemetry'
+import { createTelemetry, AMMO_START } from '../telemetry/telemetry'
 
 function setup() {
   const telemetry = createTelemetry()

@@ -3,7 +3,7 @@
 // glasses actually show) plus a MOCKUP of the surrounding full-width text
 // readouts, tinted green-on-black. Sliders drive pitch/roll/FPM. Use it to
 // design the layout before wiring text containers on-device. Values are dummy.
-import { drawHud, PITCH_PX_PER_DEG } from './scene/f16c-hud/render'
+import { drawHud, PITCH_PX_PER_DEG } from './scene/f16c-hud/components/graphics/render'
 
 const SCALE = 2
 const W = 576
