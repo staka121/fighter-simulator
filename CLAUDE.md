@@ -30,20 +30,26 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
 ## Architecture rules (see ARCHITECTURE.md for detail)
 
 - **One scene = one directory** under `src/scene/<name>/`: `index.ts`
-  (`create<Name>Scene()` with `enter`/`leave`), `view.ts` (`buildView()`),
-  `readouts.ts` (text layout), `event-handlers/`, and `components/`.
+  (`create<Name>Scene(store)` with `enter`/`leave`), `view.ts` (the page
+  builders), `event-handlers/`, and `components/`. Scene-level cross-cutting
+  modules live beside them: `store.ts` (shared state), `geo.ts`,
+  `image-sender.ts`, `settings.ts`.
 - **Features are components** under `components/<name>/`, each exposing a public
   API via an **`index.ts` barrel**. Import from the barrel (`./components/<name>`),
   never a deep path. Split internals (`types.ts`, a `render/` folder, …) only as
   a component grows. This is the target shape for new features.
+- **Shared state is `store.ts`** — a scene-level contract: data-source handlers
+  write it, components render from it. `main.ts` owns the store and passes it to
+  both the glasses scene and the phone-side UI (`src/goal/`), so both read/write
+  one state. Adding a field is an explicit change to that contract.
 - **Event handlers are `register<Thing>(bridge)`** — they subscribe immediately
   and **return their unsubscribe**. The scene collects these and runs them in
   `leave`. Do **not** name them `use*` or put them in a `hooks/` folder — they
   are not React hooks.
 - **Never read `event.sysEvent?.eventType` directly.** Use the predicates in
-  `src/events.ts` (`isClick` / `isDoubleClick` / `isExit`); add new ones there.
-  (Rationale: `CLICK_EVENT` is 0 and protobuf drops zero-value fields, so a tap
-  arrives with `eventType === undefined`.)
+  `src/events.ts` (`isClick` / `isDoubleClick` / `isScrollUp` / `isScrollDown` /
+  `isExit`); add new ones there. (Rationale: `CLICK_EVENT` is 0 and protobuf
+  drops zero-value fields, so a tap arrives with `eventType === undefined`.)
 
 ## Image / graphical symbology
 
@@ -51,8 +57,12 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
   (`canvas.toBlob('image/png')` → `Uint8Array`), and pass that Uint8Array as
   `imageData` to `updateImageRawData`. The host converts to 4-bit greyscale.
 - Do NOT pass base64 strings or hand-packed raw pixels — they fail
-  (`sendFailed` / `imageException`). Only ENCODED image bytes work. Sends must
-  be serial. Image containers need a transparent capture text layer behind them.
+  (`sendFailed` / `imageException`). Only ENCODED image bytes work. Image
+  containers need a transparent capture text layer behind them.
+- **All image sends go through the shared `image-sender.ts`** — the glasses
+  require serial sends, so it keeps one in flight, coalesces to the latest frame
+  per tile, and drains a priority tile (the moving panel) first. Never call
+  `updateImageRawData` directly from a driver; use the injected sender.
   See ARCHITECTURE.md "Graphical symbology" and
   `scene/f16c-hud/components/center-panel/render/`.
 
@@ -60,7 +70,11 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
 
 - `createStartUpPageContainer` may be called **only once**, at first render.
   Change the screen afterwards with `textContainerUpgrade` or
-  `RebuildPageContainer` — never a second `createStartUpPageContainer`.
+  `RebuildPageContainer` — never a second `createStartUpPageContainer`. (The
+  HUD ↔ settings switch uses `RebuildPageContainer`; scroll opens settings.)
+- **Custom OS long-press menu is a flat list only** (`menuItems`, ≤10, `itemName`
+  + `itemID`) and the firmware sandwiches it between its own items. No submenus,
+  no position control — that's why settings moved to a scroll-opened screen.
 - **Exactly one** container per page has `isEventCapture=1`; others `0`.
 - `containerTotalNum` 1–12; at most 8 text containers; initial text ≲1000 chars.
 - Canvas is `576 × 288` per eye, origin top-left, 4-bit grayscale (green).
@@ -75,6 +89,17 @@ Run npm/npx/tsc **inside** the container (`make sh`, or
   `cd app` then `npm run typecheck && npm run lint && npm run format:check &&
   npm test`. `npm run format` auto-fixes style. Add a Vitest `*.test.ts` for new
   pure logic.
+- **Release is tag-triggered.** Bump `app/app.json` `version` (via a PR), then
+  push a matching `vX.Y.Z` tag; `.github/workflows/release.yml` builds, packs the
+  `.ehpk` (`npm run pack`), and creates the GitHub release. The tag must equal
+  the `app.json` version or the workflow fails.
+
+## Third-party services (disclose in PRIVACY.md)
+
+The phone UI calls two external services — keep `PRIVACY.md` in sync if this
+changes: **OpenStreetMap** tiles (map picker; attribution shown, light use per
+their tile policy) and **Open-Meteo** elevation (auto-fills a goal's altitude).
+No first-party data collection; goals live in `localStorage`.
 
 ## Conventions
 
@@ -89,7 +114,9 @@ For tuning the LOOK of graphical symbology without scanning the glasses each
 time, use the dev-only preview: `make dev`, then open
 `http://localhost:5173/preview.html` in a browser. It renders the real
 `drawHud` code to a canvas (green-on-black, with pitch/roll/FPM sliders).
-`preview.html` / `src/preview.ts` are dev tools — not part of the packaged app.
+`http://localhost:5173/screenshot.html` composes the whole HUD (all real
+components) at 576×288 and exports store-listing PNGs. Both `*.html` /
+`src/{preview,screenshot}.ts` are dev tools — not part of the packaged app.
 
 ## Testing on real hardware
 
