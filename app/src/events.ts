@@ -29,6 +29,22 @@ export function isDoubleClick(event: EvenHubEvent): boolean {
   )
 }
 
+/** A scroll toward the top (scroll up), from either envelope. */
+export function isScrollUp(event: EvenHubEvent): boolean {
+  return (
+    typeOf(event.sysEvent) === OsEventTypeList.SCROLL_TOP_EVENT ||
+    typeOf(event.textEvent) === OsEventTypeList.SCROLL_TOP_EVENT
+  )
+}
+
+/** A scroll toward the bottom (scroll down), from either envelope. */
+export function isScrollDown(event: EvenHubEvent): boolean {
+  return (
+    typeOf(event.sysEvent) === OsEventTypeList.SCROLL_BOTTOM_EVENT ||
+    typeOf(event.textEvent) === OsEventTypeList.SCROLL_BOTTOM_EVENT
+  )
+}
+
 /** The host is tearing the app down (normal or abnormal exit). */
 export function isExit(event: EvenHubEvent): boolean {
   const t = typeOf(event.sysEvent)
