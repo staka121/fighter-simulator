@@ -1,34 +1,34 @@
-import { AMMO_START, type Telemetry } from '../telemetry'
+import { AMMO_START, type Store } from '../../store'
 import { playLaunchSound, playEmptySound } from './sound'
 
 /**
- * Master arm + missile logic. State lives in the shared `telemetry` so the ARM/
+ * Master arm + missile logic. State lives in the shared `store` so the ARM/
  * SAFE line renders with the rest of the left block; `refresh` re-renders that
  * block immediately (a glasses tap fires, a menu item toggles arm / reloads).
  * Firing plays a launch sound and decrements; a blocked shot (safe or empty)
  * buzzes.
  */
-export function createMissileSystem(telemetry: Telemetry, refresh: () => void) {
+export function createMissileSystem(store: Store, refresh: () => void) {
   return {
-    getAmmo: () => telemetry.ammo,
-    isArmed: () => telemetry.armed,
+    getAmmo: () => store.ammo,
+    isArmed: () => store.armed,
 
     toggleArm() {
-      telemetry.armed = !telemetry.armed
+      store.armed = !store.armed
       refresh()
     },
 
     reload() {
-      telemetry.ammo = AMMO_START
+      store.ammo = AMMO_START
       refresh()
     },
 
     fire() {
-      if (!telemetry.armed || telemetry.ammo <= 0) {
+      if (!store.armed || store.ammo <= 0) {
         playEmptySound()
         return
       }
-      telemetry.ammo -= 1
+      store.ammo -= 1
       playLaunchSound()
       refresh()
     },

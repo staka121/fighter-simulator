@@ -1,11 +1,11 @@
 import { ImuReportPace, type EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import type { Scene } from '../types'
 import { buildView } from './view'
-import { READOUTS } from './readouts'
 import { startHudDriver } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
 import { startHeadingDriver } from './components/heading'
-import { createTelemetry, startLeftDataDriver } from './components/telemetry'
+import { startLeftDataDriver } from './components/left-data'
+import { createStore } from './store'
 import { createMissileSystem, MENU_ITEMS } from './components/weapons'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
 import { registerFireOnTap } from './event-handlers/registerFireOnTap'
@@ -31,14 +31,9 @@ export function createF16cHudScene(): Scene {
       if (created !== 0) console.error('HUD page create failed:', created)
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
-      const telemetry = createTelemetry()
-      const leftData = startLeftDataDriver(
-        bridge,
-        telemetry,
-        READOUTS.leftData.id,
-        READOUTS.leftData.name,
-      )
-      const missiles = createMissileSystem(telemetry, leftData.refresh)
+      const store = createStore()
+      const leftData = startLeftDataDriver(bridge, store)
+      const missiles = createMissileSystem(store, leftData.refresh)
       await bridge.imuControl(true, ImuReportPace.P500)
 
       cleanups = [
@@ -49,11 +44,11 @@ export function createF16cHudScene(): Scene {
           [MENU_ITEMS.reload]: () => missiles.reload(),
         }),
         registerImuSampler(bridge, imu),
-        registerIntensity(bridge, telemetry),
-        registerLocation(bridge, telemetry),
+        registerIntensity(bridge, store),
+        registerLocation(bridge, store),
         startHudDriver(bridge, imu),
-        startSpeedDriver(bridge, telemetry),
-        startHeadingDriver(bridge, telemetry),
+        startSpeedDriver(bridge, store),
+        startHeadingDriver(bridge, store),
         leftData.stop,
         () => void bridge.imuControl(false),
       ]

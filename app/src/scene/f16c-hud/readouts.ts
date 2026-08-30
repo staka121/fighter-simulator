@@ -1,16 +1,15 @@
 import { TextContainerProperty } from '@evenrealities/even_hub_sdk'
 
-// Text readouts around the central graphics panel (panel edges: left 144,
-// right 432, bottom 216). Text containers can be full-width and update
-// independently, so they don't tear like tiled images. The left block (weapons
-// + movement) is one container rendered from telemetry, so all its lines share
-// the same spacing.
+// Static text readouts around the central graphics panel (panel edges: left
+// 144, right 432, bottom 216). Text containers update independently, so they
+// don't tear like tiled images. Live readouts (speed, heading, left data) own
+// their own component; what remains here are the still-dummy altitude and right
+// data blocks.
 //
-// Budget: max 8 text containers per page. Event layer (1) + speed + heading
-// components (2) + these (3) = 6.
+// Budget: max 8 text containers per page. Event layer (1) + speed + heading +
+// left-data components (3) + these (2) = 6.
 export const READOUTS = {
   altitude: { id: 4, name: 'altitude' },
-  leftData: { id: 5, name: 'leftData' },
   rightData: { id: 6, name: 'rightData' },
 } as const
 
@@ -61,18 +60,6 @@ export function buildReadoutContainers(): TextContainerProperty[] {
       content: '6590',
       boxed: true,
       pad: 1,
-    }),
-    // Left data block: weapons (ARM/SAFE + missiles) then walking telemetry
-    // (avg speed / intensity / movement class) — one container, uniform line
-    // spacing, filled live by the left-data driver. Below the airspeed box.
-    container({
-      id: r.leftData.id,
-      name: r.leftData.name,
-      x: 8,
-      y: 162,
-      w: 134,
-      h: 124,
-      content: 'ARM 6\nAVG 0.0\nINT 0\nSTOP',
     }),
     // Right data block (below the altitude box).
     container({

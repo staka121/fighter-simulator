@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createMissileSystem } from './missileSystem'
-import { createTelemetry, AMMO_START } from '../telemetry'
+import { createStore, AMMO_START } from '../../store'
 
 function setup() {
-  const telemetry = createTelemetry()
+  const store = createStore()
   const refresh = vi.fn()
-  return { telemetry, refresh, m: createMissileSystem(telemetry, refresh) }
+  return { store, refresh, m: createMissileSystem(store, refresh) }
 }
 
 describe('missile system', () => {

@@ -3,7 +3,7 @@ import {
   TextContainerUpgrade,
   type EvenAppBridge,
 } from '@evenrealities/even_hub_sdk'
-import type { Telemetry } from '../telemetry'
+import type { Store } from '../../store'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -32,20 +32,20 @@ export function buildSpeedContainer(): TextContainerProperty {
 
 /** Ground speed (km/h) or a status marker: `--` (location failed) / `0.0`
  * (running but unknown / standing) / `N.N`. */
-export function formatSpeed(t: Telemetry): string {
+export function formatSpeed(t: Store): string {
   if (!t.speedOk) return '--'
   return (t.speedKmh ?? 0).toFixed(1)
 }
 
-/** Render the airspeed box from the shared telemetry (updated by the location
+/** Render the airspeed box from the shared store (updated by the location
  * source). Refreshes ~1 Hz, writes only on change. Returns a stop fn. */
-export function startSpeedDriver(bridge: EvenAppBridge, telemetry: Telemetry): () => void {
+export function startSpeedDriver(bridge: EvenAppBridge, store: Store): () => void {
   let running = true
   let shown = ''
 
   async function loop() {
     while (running) {
-      const content = formatSpeed(telemetry)
+      const content = formatSpeed(store)
       if (content !== shown) {
         shown = content
         void bridge.textContainerUpgrade(
