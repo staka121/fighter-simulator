@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fighter HUD — store screenshots</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #232323;
+        color: #e5e5e5;
+        font:
+          14px system-ui,
+          sans-serif;
+      }
+      h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      p {
+        opacity: 0.6;
+        max-width: 640px;
+      }
+      .wrap {
+        margin: 20px 0;
+      }
+      /* Checkerboard so the transparent background is visible. */
+      .shot {
+        display: block;
+        image-rendering: pixelated;
+        background-color: #444;
+        background-image:
+          linear-gradient(45deg, #3a3a3a 25%, transparent 25%),
+          linear-gradient(-45deg, #3a3a3a 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #3a3a3a 75%),
+          linear-gradient(-45deg, transparent 75%, #3a3a3a 75%);
+        background-size: 16px 16px;
+        background-position:
+          0 0,
+          0 8px,
+          8px -8px,
+          -8px 0;
+        border: 1px solid #3a3a3a;
+      }
+      .dl {
+        display: inline-block;
+        margin-top: 8px;
+        color: #232323;
+        background: #e5e5e5;
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Fighter HUD — store screenshots</h1>
+    <p>
+      Composed from the real HUD components at 576×288, green on a transparent background (the store
+      overlays it on an environment photo). Click a button to download the PNG. Dev tool — not part
+      of the packaged app.
+    </p>
+    <div id="shots"></div>
+    <script type="module" src="/src/screenshot.ts"></script>
+  </body>
+</html>
