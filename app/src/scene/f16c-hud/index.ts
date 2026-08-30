@@ -3,6 +3,7 @@ import type { Scene } from '../types'
 import { buildView } from './view'
 import { startHudDriver } from './components/center-panel'
 import { startSpeedDriver } from './components/speed'
+import { startAltitudeDriver } from './components/altitude'
 import { startHeadingTapeDriver } from './components/heading'
 import { startLeftDataDriver } from './components/left-data'
 import { createStore } from './store'
@@ -51,6 +52,7 @@ export function createF16cHudScene(): Scene {
         registerLocation(bridge, store),
         startHudDriver(send, imu),
         startSpeedDriver(bridge, store),
+        startAltitudeDriver(bridge, store),
         startHeadingTapeDriver(send, store),
         leftData.stop,
         () => void bridge.imuControl(false),

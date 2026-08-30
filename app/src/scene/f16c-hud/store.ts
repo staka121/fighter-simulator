@@ -9,7 +9,8 @@ export interface Store {
   // movement
   speedKmh: number | null // latest GPS speed
   heading: number | null // GPS course, deg from true north (null when standing)
-  speedOk: boolean // location updates running
+  altitude: number | null // latest GPS altitude (m), null until the first fix
+  locationOk: boolean // location updates running
   avgSum: number // Σ moving-speed samples
   avgCount: number // count of moving-speed samples
   energy: number // EWMA of |accel| deviation from 1 g
@@ -22,7 +23,8 @@ export function createStore(): Store {
   return {
     speedKmh: null,
     heading: null,
-    speedOk: true,
+    altitude: null,
+    locationOk: true,
     avgSum: 0,
     avgCount: 0,
     energy: 0,

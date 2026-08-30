@@ -5,6 +5,7 @@ import {
 } from '@evenrealities/even_hub_sdk'
 import { CANVAS, TILES } from './components/center-panel'
 import { buildSpeedContainer } from './components/speed'
+import { buildAltitudeContainer } from './components/altitude'
 import { buildHeadingImageContainer } from './components/heading'
 import { buildLeftDataContainer } from './components/left-data'
 import { buildReadoutContainers } from './readouts'
@@ -42,7 +43,12 @@ export function buildView(): CreateStartUpPageContainer {
     isEventCapture: 1,
   })
 
-  const readouts = [buildSpeedContainer(), buildLeftDataContainer(), ...buildReadoutContainers()]
+  const readouts = [
+    buildSpeedContainer(),
+    buildAltitudeContainer(),
+    buildLeftDataContainer(),
+    ...buildReadoutContainers(),
+  ]
 
   // The heading tape is its own image tile below the panel (see components/heading).
   const imageObject = [...images, buildHeadingImageContainer()]

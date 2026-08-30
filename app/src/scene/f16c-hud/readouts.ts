@@ -2,14 +2,13 @@ import { TextContainerProperty } from '@evenrealities/even_hub_sdk'
 
 // Static text readouts around the central graphics panel (panel edges: left
 // 144, right 432, bottom 216). Text containers update independently, so they
-// don't tear like tiled images. Live readouts (speed, heading, left data) own
-// their own component; what remains here are the still-dummy altitude and right
-// data blocks.
+// don't tear like tiled images. Live readouts (speed, heading, altitude, left
+// data) own their own component; what remains here is the still-dummy right
+// data block.
 //
-// Budget: max 8 text containers per page. Event layer (1) + speed + heading +
-// left-data components (3) + these (2) = 6.
+// Budget: max 8 text containers per page. Event layer (1) + speed + altitude +
+// left-data components (3) + this (1) = 5, plus the heading/panel image tiles.
 export const READOUTS = {
-  altitude: { id: 4, name: 'altitude' },
   rightData: { id: 6, name: 'rightData' },
 } as const
 
@@ -48,19 +47,6 @@ function container(s: TextSpec): TextContainerProperty {
 export function buildReadoutContainers(): TextContainerProperty[] {
   const r = READOUTS
   return [
-    // Altitude box, a few px right of the panel edge (432). Same snug baseline
-    // as the airspeed box, widened for 4 digits.
-    container({
-      id: r.altitude.id,
-      name: r.altitude.name,
-      x: 436,
-      y: 125,
-      w: 68,
-      h: 32,
-      content: '6590',
-      boxed: true,
-      pad: 1,
-    }),
     // Right data block (below the altitude box).
     container({
       id: r.rightData.id,

@@ -11,14 +11,15 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 export const SPEED = { id: 3, name: 'speed' } as const
 
 /**
- * Airspeed box, hugging the panel's left edge. No text-align field exists, so
- * the box is sized snug to the digits to fake centering.
+ * Airspeed box, hugging the panel's left edge. Mirrors the altitude box across
+ * the panel centre (same width, equal 4 px gap to the panel edge) so the two
+ * read symmetrically. No text-align field exists, so the box is sized snug.
  */
 export function buildSpeedContainer(): TextContainerProperty {
   return new TextContainerProperty({
-    xPosition: 88,
+    xPosition: 72,
     yPosition: 125,
-    width: 52,
+    width: 68,
     height: 32,
     borderWidth: 1,
     borderColor: 5,
@@ -33,7 +34,7 @@ export function buildSpeedContainer(): TextContainerProperty {
 /** Ground speed (km/h) or a status marker: `--` (location failed) / `0.0`
  * (running but unknown / standing) / `N.N`. */
 export function formatSpeed(t: Store): string {
-  if (!t.speedOk) return '--'
+  if (!t.locationOk) return '--'
   return (t.speedKmh ?? 0).toFixed(1)
 }
 

@@ -5,7 +5,7 @@ import { createStore } from '../../store'
 describe('formatSpeed', () => {
   it('shows -- when location failed', () => {
     const t = createStore()
-    t.speedOk = false
+    t.locationOk = false
     expect(formatSpeed(t)).toBe('--')
   })
 
