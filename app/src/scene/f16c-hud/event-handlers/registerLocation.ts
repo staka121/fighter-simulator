@@ -12,6 +12,9 @@ import type { Store } from '../store'
  */
 export function registerLocation(bridge: EvenAppBridge, store: Store): () => void {
   const unsubscribe = bridge.onAppLocationChanged(loc => {
+    store.lat = loc.latitude
+    store.lon = loc.longitude
+
     const mps = loc.speed
     if (mps != null && mps >= 0) {
       const kmh = mps * 3.6

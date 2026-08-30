@@ -6,7 +6,7 @@ import { startSpeedDriver } from './components/speed'
 import { startAltitudeDriver } from './components/altitude'
 import { startHeadingTapeDriver } from './components/heading'
 import { startLeftDataDriver } from './components/left-data'
-import { createStore } from './store'
+import type { Store } from './store'
 import { createImageSender } from './image-sender'
 import { createMissileSystem, MENU_ITEMS } from './components/weapons'
 import { registerExitOnDoubleTap } from './event-handlers/registerExitOnDoubleTap'
@@ -23,8 +23,11 @@ import { registerIntensity } from './event-handlers/registerIntensity'
  * The boresight cross is fixed; the flight path marker and horizon/ladder are
  * driven by the IMU. Graphics are drawn with the Canvas 2D API and sent as PNG
  * bytes; the host converts to 4-bit greyscale. See render.ts / hudDriver.ts.
+ *
+ * The shared `store` is owned by the caller (main.ts) so the phone-side goal UI
+ * can write into the same state the scene reads.
  */
-export function createF16cHudScene(): Scene {
+export function createF16cHudScene(store: Store): Scene {
   let cleanups: Array<() => void> = []
 
   return {
@@ -33,7 +36,6 @@ export function createF16cHudScene(): Scene {
       if (created !== 0) console.error('HUD page create failed:', created)
 
       const imu: ImuSample = { x: 0, y: 0, z: 1, received: false }
-      const store = createStore()
       // All raw-image sends (panel + heading tape) go through one serial channel.
       const send = createImageSender(bridge)
       const leftData = startLeftDataDriver(bridge, store)
