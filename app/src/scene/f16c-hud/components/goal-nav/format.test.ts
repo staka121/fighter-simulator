@@ -31,6 +31,19 @@ describe('formatGoalNav', () => {
     expect(lines[4]).toBe('SP 00>01') // start (00) → first goal (01)
   })
 
+  it('clears the block on reaching the final destination', () => {
+    // Standing on the only (final) goal → navigation complete.
+    expect(formatGoalNav(atOriginWithGoal({ lat: 0, lon: 0 }))).toBe(
+      'R --\nAL --\nB --\nT --:--\nSP --',
+    )
+  })
+
+  it('keeps navigating after reaching an intermediate goal (not final)', () => {
+    const t = atOriginWithGoal({ lat: 0, lon: 0 }) // standing on goal 01
+    t.goals.push({ lat: 0, lon: 1 }) // a further goal 02 exists → 01 is not final
+    expect(formatGoalNav(t).split('\n')[4]).toBe('SP 00>01') // still shows nav
+  })
+
   it('keeps `from` at the last reached steerpoint, not the previous index', () => {
     const t = atOriginWithGoal({ lat: 0, lon: 1 })
     t.goals.push({ lat: 0, lon: 2 }, { lat: 0, lon: 3 })

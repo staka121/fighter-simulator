@@ -1,5 +1,8 @@
 import { activeGoal, type Store } from '../../store'
 import { distanceMeters, initialBearing } from '../../geo'
+import { ARRIVE_RADIUS_M } from './progress'
+
+const PLACEHOLDER = 'R --\nAL --\nB --\nT --:--\nSP --'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 const pad3 = (n: number) => String(n).padStart(3, '0')
@@ -20,16 +23,21 @@ function fmtTtg(m: number, mps: number): string {
 /**
  * Right data block — goal navigation, a walking-HUD take on the F-16C
  * steerpoint block. Five lines: range, goal altitude, bearing (true north),
- * time-to-go, and steerpoint number. All `--` until a goal and a GPS fix exist.
+ * time-to-go, and steerpoint number. All `--` until a goal and a GPS fix exist,
+ * and again once the final destination is reached (nav complete).
  */
 export function formatGoalNav(store: Store): string {
   const g = activeGoal(store)
-  if (!g || store.lat == null || store.lon == null) {
-    return 'R --\nAL --\nB --\nT --:--\nSP --'
-  }
+  if (!g || store.lat == null || store.lon == null) return PLACEHOLDER
 
   const here = { lat: store.lat, lon: store.lon }
   const m = distanceMeters(here, g)
+
+  // Reached the final destination (active goal is the last one, within arrival
+  // range) → navigation is done, so clear the block.
+  const isFinalGoal = store.activeGoalIndex === store.goals.length - 1
+  if (isFinalGoal && m <= ARRIVE_RADIUS_M) return PLACEHOLDER
+
   const alt = g.alt != null ? `AL ${Math.round(g.alt)}` : 'AL --'
   const bearing = `B ${pad3(Math.round(initialBearing(here, g)) % 360)}`
   // ETA speed: prefer the moving average, fall back to the latest reading.

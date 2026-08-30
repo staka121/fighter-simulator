@@ -7,23 +7,51 @@ export type ImageSender = (
 ) => Promise<void>
 
 /**
- * Serialise all image sends onto one channel. The glasses require raw-image
- * sends to be strictly serial, but the HUD panel and the heading tape run
- * independent render loops. Chaining every send onto a single tail promise
- * guarantees only one `updateImageRawData` is ever in flight, regardless of
- * which driver initiated it.
+ * Serialise all image sends onto one channel, coalescing per tile. The glasses
+ * require raw-image sends to be strictly serial, but the panel, heading tape and
+ * minimap run independent render loops. Sending every frame in FIFO order lets a
+ * fast producer (the IMU-driven panel while walking) clog the queue with stale
+ * frames, so other tiles — and the panel itself — update irregularly or stall.
+ *
+ * Instead we keep only the *latest* pending frame per tile and drain them one at
+ * a time, round-robin. Backlog is bounded to one frame per tile, and every tile
+ * always sends its freshest pixels as soon as the channel is free.
  */
 export function createImageSender(bridge: EvenAppBridge): ImageSender {
-  let tail: Promise<unknown> = Promise.resolve()
+  const latest = new Map<number, { name: string; data: Uint8Array }>()
+  const queue: number[] = [] // tile ids awaiting a send, in arrival order
+  let draining = false
+
+  async function drain() {
+    if (draining) return
+    draining = true
+    try {
+      while (queue.length > 0) {
+        const id = queue.shift()!
+        const frame = latest.get(id)
+        latest.delete(id) // a newer frame arriving during the send re-queues the id
+        if (!frame) continue
+        try {
+          await bridge.updateImageRawData(
+            new ImageRawDataUpdate({
+              containerID: id,
+              containerName: frame.name,
+              imageData: frame.data,
+            }),
+          )
+        } catch (e) {
+          console.error('image send failed:', e)
+        }
+      }
+    } finally {
+      draining = false
+    }
+  }
+
   return (containerID, containerName, imageData) => {
-    const run = tail
-      .catch(() => {})
-      .then(() =>
-        bridge.updateImageRawData(
-          new ImageRawDataUpdate({ containerID, containerName, imageData }),
-        ),
-      )
-    tail = run
-    return run.then(() => {})
+    if (!latest.has(containerID)) queue.push(containerID)
+    latest.set(containerID, { name: containerName, data: imageData })
+    void drain()
+    return Promise.resolve()
   }
 }
