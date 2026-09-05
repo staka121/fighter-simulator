@@ -14,21 +14,22 @@ function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
 }
 
 // Tuning — refine on-device.
-const FRAME_MS = 120 // ~8 Hz; one tile, so smooth and within the send budget.
+const FRAME_MS = 100 // ~10 Hz; a modest bump. The panel is the priority tile, so
+// going much faster would starve the heading/minimap tiles (see image-sender).
 
 // Flight path marker (velocity vector) — spring-damper for inertia.
 const FPM_MAX_X = 80 // max horizontal deflection (px)
 const FPM_MAX_Y = 48 // max vertical deflection (px) — stay inside the 144-tall band
-const FPM_VMAX = 8 // max speed (px/frame)
-const FPM_GAIN = 360 // IMU g-delta -> px
-const FPM_SMOOTH = 0.25 // low-pass on raw IMU
-const FPM_STIFF = 0.1
+const FPM_VMAX = 12 // max speed (px/frame) — higher = the marker can dart farther per frame
+const FPM_GAIN = 470 // IMU g-delta -> px — higher = more deflection for the same motion
+const FPM_SMOOTH = 0.33 // low-pass on raw IMU — higher = snappier follow, less lag
+const FPM_STIFF = 0.15 // spring toward the target — higher = quicker to react
 const FPM_DAMP = 0.86
 const SIGN_YAW = -1 // imu.y -> horizontal
 const SIGN_PITCH_FPM = 1 // imu.x -> vertical
 
 // Horizon / pitch ladder. (PITCH_PX_PER_DEG is shared from render.ts.)
-const ANGLE_SMOOTH = 0.2 // low-pass on pitch/roll angles
+const ANGLE_SMOOTH = 0.3 // low-pass on pitch/roll angles — higher = the horizon tracks the head faster
 const SIGN_HORIZON = 1 // pitch angle -> vertical px (look up => horizon up)
 const SIGN_ROLL = -1 // roll angle -> rotation
 
