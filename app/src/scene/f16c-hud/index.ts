@@ -36,7 +36,7 @@ import { registerIntensity } from './event-handlers/registerIntensity'
  * The shared `store` is owned by the caller (main.ts) so the phone-side goal UI
  * can write into the same state the scene reads.
  */
-export function createF16cHudScene(store: Store): Scene {
+export function createF16cHudScene(store: Store, opts: { demo?: boolean } = {}): Scene {
   let persistent: Array<() => void> = []
   let hud: Array<() => void> = []
   let mode: 'hud' | 'settings' = 'hud'
@@ -104,7 +104,9 @@ export function createF16cHudScene(store: Store): Scene {
       // All raw-image sends go through one serial channel; the moving panel is
       // prioritised so its cadence stays regular.
       send = createImageSender(bridge, TILES[0].id)
-      await bridge.imuControl(true, ImuReportPace.P500)
+      // Non-fatal: a glasses model (or the simulator) without IMU streaming must
+      // not abort the rest of enter — the HUD still renders a level attitude.
+      await bridge.imuControl(true, ImuReportPace.P500).catch(() => {})
 
       persistent = [
         registerExitOnDoubleTap(bridge),
@@ -120,6 +122,15 @@ export function createF16cHudScene(store: Store): Scene {
         registerLocation(bridge, store),
         () => void bridge.imuControl(false),
       ]
+
+      // Dev-only: the simulator has no GPS/IMU, so seed representative data for
+      // store screenshots. Dynamically imported so a packaged build never pulls
+      // it in (main.ts only sets demo under import.meta.env.DEV).
+      if (opts.demo) {
+        const { seedDemo } = await import('./demo')
+        persistent.push(seedDemo(store, imu))
+      }
+
       hud = startHud()
     },
 

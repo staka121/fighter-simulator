@@ -115,8 +115,37 @@ time, use the dev-only preview: `make dev`, then open
 `http://localhost:5173/preview.html` in a browser. It renders the real
 `drawHud` code to a canvas (green-on-black, with pitch/roll/FPM sliders).
 `http://localhost:5173/screenshot.html` composes the whole HUD (all real
-components) at 576×288 and exports store-listing PNGs. Both `*.html` /
+components) at 576×288 for LOOK tuning only. Both `*.html` /
 `src/{preview,screenshot}.ts` are dev tools — not part of the packaged app.
+
+> These browser canvases are for tuning, **not** for the store listing. Even
+> rejects self-composed/recoloured images — store screenshots must be RAW
+> simulator captures (see below).
+
+## Store screenshots (official)
+
+The Even store requires **raw captures from the `evenhub-simulator`** — no
+editing, cropping, or recolouring (self-made canvas PNGs get rejected as
+"abnormal colors"). The simulator is a HOST GUI tool (the one exception to
+"no host tooling"; nothing renders the glasses display off-device without it).
+
+```bash
+make dev          # dev server up (Docker) so the sim has something to load
+make screenshots  # launch the sim (host) + drive it + capture -> screenshots/
+make sim-stop     # close the sim window when done
+```
+
+`make screenshots` writes `1-hud.png`, `2-settings.png`, `3-hud-alt.png`
+(576×288 RGBA framebuffer) — **submit these files untouched**. For a manual
+session use `make sim` (leaves it running) then re-run `make screenshots`, or
+drive it yourself via the automation API on `:9898` (`/api/screenshot/glasses`,
+`/api/input`, `/api/console`). `screenshots/` is git-ignored (regenerable).
+
+The sim has no GPS/IMU, so the dev-only `?demo` flag (in `SIM_URL`) seeds
+representative data — gated on `import.meta.env.DEV`, so a packaged build never
+loads it. The app still draws every pixel through the real SDK, so the capture
+is authentic, not post-processed. See `tools/sim-screenshots.sh` and
+`scene/f16c-hud/demo.ts`.
 
 ## Testing on real hardware
 

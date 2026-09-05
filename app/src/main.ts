@@ -16,8 +16,10 @@ loadGoals(store)
 const app = document.getElementById('app')
 if (app) mountGoalPanel(app, store)
 
-// Mount the initial scene.
-const scene = createF16cHudScene(store)
+// Mount the initial scene. `?demo` seeds representative data for simulator
+// screenshots; gated on DEV so a packaged build can never enable it.
+const demo = import.meta.env.DEV && new URLSearchParams(location.search).has('demo')
+const scene = createF16cHudScene(store, { demo })
 await scene.enter(bridge)
 
 // Tear the scene down when the host signals the app is exiting.
