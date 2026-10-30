@@ -63,3 +63,4 @@ This policy may be updated; the date above reflects the latest version.
 ## Contact
 
 - Developer: 1knco
+- Issues: <https://github.com/staka121/fighter-simulator/issues>
